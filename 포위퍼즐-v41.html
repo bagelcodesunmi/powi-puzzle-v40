@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>포위 퍼즐 통합 빌드 v40 (내구도 1 전환)</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { height:100%; overflow:hidden; background:#1b1b1f; touch-action:none; }
+  body { display:flex; flex-direction:column; align-items:center; font-family:system-ui, sans-serif; }
+  #hud {
+    width:100%; max-width:520px; padding:10px 16px;
+    display:flex; justify-content:space-between; color:#e8e4da; font-size:15px;
+  }
+  #hud b { font-size:18px; }
+  #stage { position:relative; flex:1; width:100%; max-width:520px; display:flex; align-items:center; justify-content:center; }
+  canvas { display:block; border-radius:8px; }
+  #overlay {
+    position:absolute; inset:0; display:flex; flex-direction:column; gap:16px;
+    align-items:center; justify-content:center; background:rgba(20,20,24,.72); border-radius:8px;
+  }
+  #overlay.hidden { display:none; }
+  #msg { color:#fff; font-size:26px; font-weight:700; }
+  #restart {
+    padding:12px 28px; font-size:16px; border:none; border-radius:24px;
+    background:#e8e4da; color:#1b1b1f; font-weight:700;
+  }
+</style>
+</head>
+<body>
+  <div id="hud">
+    <span>레벨 <b id="uiLevel">1</b></span>
+    <span>적 <b id="uiFoes">0</b></span>
+    <span>돌 <b id="uiStones">0</b></span>
+  </div>
+  <div id="stage">
+    <canvas id="cv"></canvas>
+    <div id="overlay" class="hidden">
+      <div id="msg"></div>
+      <button id="restart">처음부터</button>
+    </div>
+  </div>
+
+<script>
+// ═════ 포위 퍼즐 v40 — 현재 규칙 ═════
+// 배치: 빈칸 어디든 탭 1회 = 돌 1개(내구도 2). 1:1 고정 턴 (내 배치 1 ↔ 적 턴 1).
+// 포획: 적 영역의 빈칸이 0(완전 밀폐)이 되면, 영역에 인접한 각 벽이 화살 1발씩 발사.
+//       벽은 자기와 붙은 적을 최대 매칭으로 조준 — 벽당 1킬.
+//       안 맞은 적(비인접 심, 벽 소진)은 생존. 죽은 칸은 빈칸으로 열림 → 재조임으로 겹 벗기기.
+// 확산: 적 턴마다 프런티어 1칸(개방도 가중 랜덤). 자살 칸(영역의 마지막 빈칸)은 대안이 있으면 회피,
+//       갈 곳이 그 칸뿐이면 강제 진입(자충 → 파동 발사). 예고 점선 = 실행과 동일 기준으로 매 프레임 검증.
+// 적 턴 순서 [v35]: [확산] → (강제 자충 시 파동 종료까지 턴 유지) → 내 턴. 벽 공격 단계 없음.
+// 전투(combat 레벨) [v36]: 적의 공격은 포획 반격 하나뿐 — 밀폐된 영역의 적 전원이 동시 반격.
+//       (매칭, 적당 1발, 벽당 1타 1데미지, 면제 없음 — 마무리 돌도 맞는다) 죽는 적도 쏘며 죽는다.
+//       다른 영역의 적은 불참 (도발 없는 공격 금지 원칙). 비전투 레벨은 반격 없음. 적 턴 = 확산만.
+//       내구도 2라 같은 벽이 두 볼리에 걸쳐 맞으면 파괴 — 다회 포획 레벨에서 방어선이 삭는다.
+// 실패 [v37 유예]: 확산 레벨은 마지막 돌 이후에도 적 턴(강제 자충 포함)을 끝까지 실행하고,
+//       그래도 적이 남아 있으면 그때 돌 소진 실패. 정지 레벨은 즉시 판정. 승리: 적 전멸.
+// ─── 히스토리: v28 별점 제거 → v30 포획 화살 연출 → v32 겹 벗기기·밀폐 발동·자살 확산 금지·공격 선행 턴
+//              → v33 전투 매칭·화살 대칭화 → v34 포획 총격전 → v35 매 턴 공격 폐지 → v36 내구도 2·좌상단 발사·반격 밀폐 한정·레벨 재편 → v37 유예 판정 → v39 손상 표현 제거 → v40 전면 내구도 1 (반격 1발 = 벽 파괴) + 14 단일 적 교체.
+// ─── 삭제된 시스템: 머지, 영토(자동 벽·틴트·배치 금지), 열매·아이템, 별점.
+const LEVELS = [
+  // ═══ 밸런스 원칙: 구간 내 보드·예산 감소 금지 (새 룰 도입 시점만 리셋 허용). 전 판 제로 슬랙 ═══
+  // — 1부: 격리 (비전투 8판) — 구 4번(1,1)은 3번(1,2)과 미러링 동일 궤도라 제거. 이하 번호 1씩 당겨짐 —
+  // seeds: 클리어/재시도마다 이 배열에서 하나를 선택한다.
+  //   1,9번(튜토리얼) = 1개, 2번 = 1개, 3~8/10~12번(연습·중반) = 3개, 13~15번(후반) = 5개.
+  //   ⚠️ 아래 시드는 placeholder — seed-validator.js로 검증 후 교체 예정.
+  // seeds: validator로 검증된 시드 (이 경로에서 min 예산으로 클리어 가능 확인됨)
+  { board: 3, enemies: [[0,0]], walls: [[1,0,1],[1,1,1]], schedule: [1],     spread: true, combat: false, min: 1, exactBudget: true, seeds: [100001] }, // 1 오프닝: 1탭 포획
+  { board: 3, enemies: [[0,0]],                           schedule: [1,1,1], spread: true, combat: false, min: 3, exactBudget: true, seeds: [200001] }, // 2 추격 봉인
+  { board: 4, enemies: [[1,2]],       schedule: [1,1,1,1,1,1],         spread: true, combat: false, min: 6, exactBudget: true, seeds: [300001,300002,300003] }, // 3 내부
+  { board: 4, enemies: [[0,0],[3,3]], schedule: [1,1,1,1,1,1,1],       spread: true, combat: false, min: 7, exactBudget: true, seeds: [400001,400002,400003] }, // 4 양면 코너쌍 — v37 min=7 확정
+  { board: 4, enemies: [[1,1],[2,3]], schedule: [1,1,1,1,1,1,1],       spread: true, combat: false, min: 7, exactBudget: true, seeds: [500001,500002,500003] }, // 5 좁은 방 2기 — v37 min=7 확정
+  { board: 5, enemies: [[1,1]],       schedule: [1,1,1,1,1,1,1,1,1], spread: true, combat: false, min: 9, exactBudget: true, seeds: [600001,600002,600003,600004,600005] }, // 6 5×5 내부 — 예산 8→9 (낙차 40%p 해소)
+  { board: 5, enemies: [[2,1]],       schedule: [1,1,1,1,1,1,1,1],     spread: true, combat: false, min: 8, exactBudget: true, seeds: [700001,700002,700003,700007] }, // 7 5×5 변근접 내부
+  { board: 5, enemies: [[2,2]],       schedule: [1,1,1,1,1,1,1,1,1],   spread: true, combat: false, min: 9, exactBudget: true, seeds: [800002,800003,800004] }, // 8 5×5 정중앙
+  // — 2부: 전투 6판 (9번부터 끝까지 서로 공격) — 9 = 1탭 오프닝(벽은 1턴 킬에 필수라 유일하게 프리셋 유지).
+  //   구 변(1,0) 판은 코너와 체감 중복으로 제거 —
+  //   11~16 = 1부와 같은 방식의 맨판 적 배치 + 전투만 추가. 프리셋 벽 사용 구판(2×2 정지·십자·3×3 보스)은 전부 폐기 —
+  { board: 3, enemies: [[0,0]], walls: [[1,0,1]], schedule: [1], spread: true, combat: true, min: 1, exactBudget: true, seeds: [900001] }, // 9 전투 오프닝: 적 1·벽 1 최소 구성, 1탭 전멸 + 반격 1발(벽 파괴 첫 경험) — v40 min=1 확정
+  { board: 3, enemies: [[0,0]],       schedule: [1,1,1],                 spread: true, combat: true, min: 3, exactBudget: true, seeds: [1000001,1000002,1000003] }, // 10 3×3 코너 — v40 min=3 확정
+  { board: 4, enemies: [[0,0]],       schedule: [1,1,1,1],               spread: true, combat: true, min: 4, exactBudget: true, seeds: [1100001,1100002,1100003,1100004] }, // 11 4×4 코너 — v40 min=4 확정
+  { board: 4, enemies: [[1,1]],       schedule: [1,1,1,1,1,1],           spread: true, combat: true, min: 6, exactBudget: true, seeds: [1200001,1200002,1200003,1200004] }, // 12 4×4 내부 — v40 min=6 확정 ※ (1,1)·(1,2)는 미러링상 동일 궤도 — 내부 클래스는 이 한 판만 유지
+  { board: 5, enemies: [[1,1]],       schedule: [1,1,1,1,1,1,1,1],       spread: true, combat: true, min: 8, exactBudget: true, seeds: [1300001,1300002,1300003,1300005,1300006] }, // 13 5×5 내부 — v40 min=8 확정
+  { board: 5, enemies: [[2,1]],       schedule: [1,1,1,1,1,1,1,1],       spread: true, combat: true, min: 8, exactBudget: true, seeds: [1400001,1400004,1400005,1400006,1400007] }, // 14 5×5 변근접 — v40 min=8 확정
+  { board: 6, enemies: [[0,0],[2,0]], hp: 2, schedule: [1,1,1,1,1,1,1,1,1,1,1,1], spread: true, combat: true, min: 12, exactBudget: true, seeds: [1500007,1500017,1500018,1500019,1500021] }, // 15 [피날레] 6×6 확산 2기·한 칸 간격 (이 판만 내구도 2) — 예산 11 확정
+];
+
+// grid 값: 0=빈칸, -1=적, 양수=벽 내구도
+// [v40] 기본 내구도 1 — 반격 1발 = 벽 즉시 파괴 (승리 경로 축소로 난도 확보).
+//       확산형 2기는 내구도 1에서 구조적 발산(검증) → 2기 레벨(15)만 hp:2 플래그로 내구도 2.
+// ===== mulberry32 시드 PRNG =====
+// 레벨 내 모든 랜덤(미러링·확산·파티클)이 이 PRNG를 사용한다.
+// 시드가 고정되면 같은 플레이 조건에서 항상 동일한 적 행동이 재현된다.
+function mulberry32(seed) {
+  return function() {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let z = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    z = z + Math.imul(z ^ z >>> 7, 61 | z) ^ z;
+    return ((z ^ z >>> 14) >>> 0) / 4294967296;
+  };
+}
+let prng = Math.random;   // 레벨 로드 시 교체됨
+let currentSeed = 0;      // 현재 레벨에서 사용 중인 시드
+
+const EMPTY = 0, ENEMY = -1;
+
+// ===== 상태 =====
+let N = 2;
+let levelIdx = 0, level = null;
+let grid, gameOver;
+let stonesLeft = 0, turnLeft = 0, turnIdx = 0;
+let nextSpread = null;
+let flashes = [], particles = [];
+let dying = [];                                // 폭발 큐 (화살 명중 시각에 터뜨림)
+let bolts = [];                                // [v30] 포획 화살 + [v33] 전투 화살(combat:true) 공용
+let pendingHits = [];                          // [v34] 반격 명중 큐 {c, at}: 화살 명중 순간 벽 내구도 감소 (loop에서 처리)
+let stonePop = 0;                              // 턴 소모 팝 애니메이션 (1→0)
+let shake = 0;
+let toast = null, failWaiting = false, advanceTimer = null;
+let hover = null;        // 누르는 중인 보드 칸 (배치 미리보기)
+let pressing = false;    // 포인터를 누르고 있는 동안에만 미리보기 갱신
+let enemyPending = false, enemyTimer = null;   // 적 턴 지연 처리
+let fxLock = false;                            // [A-2] 정적 레벨: 포획 연출 중 입력 잠금 (시체 위 배치 방지)
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+const overlay = document.getElementById('overlay');
+const msgEl = document.getElementById('msg');
+
+const idx = (x, y) => y * N + x;
+const inBoard = (x, y) => x >= 0 && x < N && y >= 0 && y < N;
+const DIRS = [[1,0],[-1,0],[0,1],[0,-1]];
+const isBlock = v => v > 0;
+
+// ===== 레벨 로드 =====
+// usedSeeds[levelIdx] = 이미 사용한 시드 Set (재시도/리플레이에서 중복 회피)
+const usedSeeds = {};
+
+function pickSeed(lv, reuse) {
+  // reuse=true: 현재 시드 그대로 (실패 후 재시도)
+  if (reuse && currentSeed) return currentSeed;
+  const pool = lv.seeds || [];
+  if (!pool.length) return (Math.random() * 0xFFFFFFFF) | 0;   // seeds 없으면 완전 랜덤
+  const used = usedSeeds[levelIdx] || new Set();
+  const unused = pool.filter(s => !used.has(s));
+  const candidates = unused.length ? unused : pool;             // 다 썼으면 전체 재사용
+  return candidates[(Math.random() * candidates.length) | 0];
+}
+
+function loadLevel(i, { reuse = false } = {}) {
+  levelIdx = i;
+  level = LEVELS[i];
+  N = level.board;
+
+  // 시드 선택 및 PRNG 초기화
+  const seed = pickSeed(level, reuse);
+  currentSeed = seed;
+  if (!reuse) {
+    if (!usedSeeds[i]) usedSeeds[i] = new Set();
+    usedSeeds[i].add(seed);
+  }
+  prng = mulberry32(seed);
+
+  resize();
+  grid = new Array(N * N).fill(EMPTY);
+  gameOver = false;
+  flashes = []; particles = [];
+  dying = [];
+  bolts = [];
+  pendingHits = [];
+  stonePop = 0;
+  shake = 0; toast = null; failWaiting = false;
+  hover = null;
+  pressing = false;
+  enemyPending = false;
+  fxLock = false;
+  if (enemyTimer) { clearTimeout(enemyTimer); enemyTimer = null; }
+  nextSpread = null;
+  if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
+
+  const fx = prng() < .5;
+  const fy = prng() < .5;
+  for (const [x, y] of level.enemies) {
+    grid[idx(fx ? N - 1 - x : x, fy ? N - 1 - y : y)] = ENEMY;
+  }
+  if (level.walls) {   // 프리셋 벽: 적과 같은 미러링 적용 (상대 위치 유지)
+    for (const [x, y, hp] of level.walls) {
+      grid[idx(fx ? N - 1 - x : x, fy ? N - 1 - y : y)] = hp;
+    }
+  }
+  // 예산: 기본 = schedule 합 + 6 (⚠️ 잠정, 밸런스 미검증). exactBudget 레벨은 솔버 min 그대로 (제로 슬랙).
+  stonesLeft = level.schedule.reduce((a, b) => a + b, 0) + (level.exactBudget ? 0 : 6);
+  turnIdx = 0;
+  turnLeft = level.schedule[0];
+
+  if (level.spread) computeNextSpread();
+  overlay.classList.add('hidden');
+  updateHud();
+}
+
+function enemyCount() { return grid.filter(v => v === ENEMY).length; }
+
+function updateHud() {
+  document.getElementById('uiLevel').textContent = levelIdx + 1;
+  document.getElementById('uiFoes').textContent = enemyCount();
+  document.getElementById('uiStones').textContent = stonesLeft;
+}
+
+// ===== 배치 (탭 1회 = 돌 1개, 빈칸 전용) =====
+function placeStone(x, y) {
+  if (gameOver || enemyPending || fxLock || stonesLeft <= 0 || !inBoard(x, y)) return false;
+  const i = idx(x, y);
+  if (grid[i] !== EMPTY) {           // 벽·적 위 배치 불가 (흰 플래시 피드백)
+    flashes.push({ c: i, t: 1, col: '255,255,255' });
+    return false;
+  }
+  grid[i] = level.hp || 1;                                           // 배치 내구도 (레벨별 hp 플래그, 기본 1)
+  stonesLeft--;
+  stonePop = 1;                                                      // 턴 소모 팝
+  turnLeft--;
+
+  const fired = captureRegions();
+  if (!checkEnd(true) && turnLeft <= 0) {
+    if (level.spread) {
+      // 적 턴 지연: 포획 연출 종료 후 400ms 정적 — [내 공격]→정적→[적 확산] 3박자 (포획 없으면 120ms)
+      enemyPending = true;
+      let fxEnd = performance.now() + 120;
+      for (const d of dying) fxEnd = Math.max(fxEnd, d.at + 400);            // 폭발 후 정적
+      for (const b of bolts) fxEnd = Math.max(fxEnd, b.at + b.dur + 400);    // 화살 종료 후 정적
+      enemyTimer = setTimeout(enemyPhase, Math.max(120, fxEnd - performance.now()));
+    } else {
+      turnIdx = Math.min(turnIdx + 1, level.schedule.length - 1);
+      turnLeft = level.schedule[turnIdx];   // 정적 레벨은 즉시 다음 묶음 (이월 없음)
+    }
+  }
+  if (fired && !level.spread && !gameOver) {
+    // [A-2] 정적 레벨: 파동(화살·폭발)이 끝날 때까지 입력 잠금 — 시체 칸 배치·파동 중첩 방지
+    fxLock = true;
+    let fxEnd = performance.now();
+    for (const d of dying) fxEnd = Math.max(fxEnd, d.at + 150);
+    for (const b of bolts) fxEnd = Math.max(fxEnd, b.at + b.dur + 150);
+    enemyTimer = setTimeout(() => { enemyTimer = null; fxLock = false; }, Math.max(0, fxEnd - performance.now()));
+  }
+  updateHud();
+  return true;
+}
+
+function enemyPhase() {
+  enemyTimer = null;
+  if (gameOver) { enemyPending = false; return; }
+  const finishPhase = () => {
+    enemyTimer = null;
+    if (gameOver) { enemyPending = false; return; }
+    // 2박: 확산 — 적 턴의 마지막 동작. "적이 놓였다 = 이제 내 턴"이 항상 성립.
+    executeSpread();
+    const fired = captureRegions();   // 강제 자충 처리 (갈 곳이 마지막 빈칸뿐이었던 경우)
+    computeNextSpread();
+    turnIdx = Math.min(turnIdx + 1, level.schedule.length - 1);
+    turnLeft = level.schedule[turnIdx];
+    updateHud();
+    if (fired) {
+      // 자충 파동은 적 턴의 사건 — 화살·폭발·정적이 끝난 뒤에 내 턴으로 전환 (내 턴 침범 방지)
+      let fxEnd = performance.now();
+      for (const d of dying) fxEnd = Math.max(fxEnd, d.at + 400);
+      for (const b of bolts) fxEnd = Math.max(fxEnd, b.at + b.dur + 400);
+      enemyTimer = setTimeout(() => {
+        enemyTimer = null;
+        enemyPending = false;
+        checkEnd();
+        updateHud();
+      }, Math.max(0, fxEnd - performance.now()));
+    } else {
+      enemyPending = false;
+      checkEnd();
+    }
+  };
+  // [v35] 매 턴 벽 공격 폐지 — 적의 공격은 포획 반격(밀폐 순간 동시 사격)뿐. 적 턴 = 확산만.
+  finishPhase();
+}
+
+
+// ===== 핵심: 포획 판정 [v36] =====
+// 발동 = 적 영역의 빈칸 0 (완전 밀폐). 내 화살(블록→적)과 반격 화살(적→블록)을 한 번에 산출.
+// 반환: {shots, counters} — 포획 실행과 배치 미리보기가 공유 (예고 = 실제).
+function computeShots(board) {
+  const seen = new Array(N * N).fill(false);
+  const shots = [];                             // 내 화살: {from: 블록, to: 적}
+  const counters = [];                          // 반격 화살: {from: 적, to: 블록} — 밀폐 영역의 적만 (v36)
+  for (let i = 0; i < N * N; i++) {
+    if (isBlock(board[i]) || seen[i]) continue;
+    const cells = [];
+    const queue = [i];
+    seen[i] = true;
+    let empties = 0, hasEnemy = false;
+    while (queue.length) {
+      const c = queue.pop();
+      cells.push(c);
+      if (board[c] === EMPTY) empties++;
+      else if (board[c] === ENEMY) hasEnemy = true;
+      const cx = c % N, cy = (c / N) | 0;
+      for (const [dx, dy] of DIRS) {
+        const nx = cx + dx, ny = cy + dy;
+        if (!inBoard(nx, ny)) continue;
+        const ni = idx(nx, ny);
+        if (!isBlock(board[ni]) && !seen[ni]) { seen[ni] = true; queue.push(ni); }
+      }
+    }
+    if (!hasEnemy || empties > 0) continue;            // 완전 밀폐(빈칸 0)만 발동
+    const enemySet = new Set(cells);                   // 빈칸 0이므로 영역 = 적 칸 전부
+    const walls = new Set();
+    for (const c of enemySet) {
+      const cx = c % N, cy = (c / N) | 0;
+      for (const [dx, dy] of DIRS) {
+        const nx = cx + dx, ny = cy + dy;
+        if (inBoard(nx, ny) && isBlock(board[idx(nx, ny)])) walls.add(idx(nx, ny));
+      }
+    }
+    // [내 화살 — 최대 매칭] 블록들이 조율해 최대 마릿수 처치. 블록·적 모두 좌상단 순 (결정론, 솔버와 동일 기준).
+    const wallOrder = [...walls].sort((a, b) => a - b);
+    const foesOf = w => {
+      const wx = w % N, wy = (w / N) | 0, out = [];
+      for (const [dx, dy] of DIRS) {
+        const nx = wx + dx, ny = wy + dy;
+        if (inBoard(nx, ny) && enemySet.has(idx(nx, ny))) out.push(idx(nx, ny));
+      }
+      return out.sort((a, b) => a - b);
+    };
+    const matchedBy = new Map();                  // 적 → 블록
+    const augment = (w, visited) => {
+      for (const f of foesOf(w)) {
+        if (visited.has(f)) continue;
+        visited.add(f);
+        if (!matchedBy.has(f) || augment(matchedBy.get(f), visited)) {
+          matchedBy.set(f, w);                    // 재배정: 기존 블록은 다른 적으로 밀려남 (매칭 유지)
+          return true;
+        }
+      }
+      return false;
+    };
+    for (const w of wallOrder) augment(w, new Set());
+    const shotOf = new Map();                     // 블록 → 적 (발사 목록 재구성)
+    for (const [f, w] of matchedBy) shotOf.set(w, f);
+    for (const w of wallOrder) if (shotOf.has(w)) shots.push({ from: w, to: shotOf.get(w) });
+    // [반격 — v36] 밀폐 영역의 적 전원(죽는 적 포함)이 인접 벽에 화살 1발, 벽당 1타 (최대 매칭).
+    // 벽 후보는 내구도 최저 우선(동률 시 좌상단) — "적은 가장 약한 벽부터". 다른 영역의 적은 불참.
+    const foeOrder = [...enemySet].sort((a, b) => a - b);
+    const wallsOfFoe = f => {
+      const fx2 = f % N, fy2 = (f / N) | 0, out = [];
+      for (const [dx, dy] of DIRS) {
+        const nx = fx2 + dx, ny = fy2 + dy;
+        if (inBoard(nx, ny) && isBlock(board[idx(nx, ny)])) out.push(idx(nx, ny));
+      }
+      return out.sort((a, b) => (board[a] - board[b]) || (a - b));
+    };
+    const hitBy = new Map();                      // 블록 → 적
+    const augC = (f, visited) => {
+      for (const w of wallsOfFoe(f)) {
+        if (visited.has(w)) continue;
+        visited.add(w);
+        if (!hitBy.has(w) || augC(hitBy.get(w), visited)) { hitBy.set(w, f); return true; }
+      }
+      return false;
+    };
+    for (const f of foeOrder) augC(f, new Set());
+    const counterOf = new Map();                  // 적 → 블록
+    for (const [w, f] of hitBy) counterOf.set(f, w);
+    for (const f of foeOrder) if (counterOf.has(f)) counters.push({ from: f, to: counterOf.get(f) });
+  }
+  return { shots, counters };
+}
+
+function captureRegions() {
+  const { shots, counters } = computeShots(grid);
+  if (!shots.length) return 0;
+  const t0 = performance.now();
+  shots.forEach(({ from, to }) => {
+    grid[to] = EMPTY;                                  // 로직은 즉시 — 죽은 칸은 다음 조임의 자리
+    bolts.push({ from, to, at: t0, dur: 225 });        // [동시 발사] 전 화살 일제 발사·일제 명중
+    dying.push({ c: to, at: t0 + 225, done: false });  // 명중 순간 폭발
+  });
+  for (const { from, to } of counters) {               // [v36] 반격: 밀폐 영역의 적만, 전투 레벨만
+    if (!level.combat) break;
+    bolts.push({ from, to, at: t0, dur: 225, combat: true });   // 반격 화살: 내 화살과 교차 비행
+    pendingHits.push({ c: to, at: t0 + 225 });                  // 명중 순간 내구도 감소 (화면·로직 동기)
+  }
+  return shots.length;
+}
+
+function spawnBurst(c) {
+  const x = c % N, y = (c / N) | 0;
+  const px = pad + (x + .5) * cell, py = pad + (y + .5) * cell;
+  for (let k = 0; k < 8; k++) {
+    const a = prng() * Math.PI * 2;
+    const sp = cell * (2 + prng() * 4);
+    particles.push({
+      x: px, y: py,
+      vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - cell * 2,
+      t: 1, s: cell * (0.1 + prng() * 0.12),
+    });
+  }
+}
+
+// ===== 확산/침식 =====
+// [자살 확산 금지] 번지면 그 영역의 빈칸이 0이 되는 칸(= 영역의 마지막 빈칸)은 확산·예고에서 제외.
+// 마무리 봉인은 항상 플레이어의 돌 — "적 생성 → 즉시 피격" 장면 원천 제거.
+function isSuicideCell(c) {
+  const seen = new Set([c]);
+  const q = [c];
+  let empties = 0;
+  while (q.length) {
+    const k = q.pop();
+    if (grid[k] === EMPTY) empties++;
+    if (empties > 1) return false;               // 빈칸 2개 이상 → 안전 (조기 종료)
+    const kx = k % N, ky = (k / N) | 0;
+    for (const [dx, dy] of DIRS) {
+      const nx = kx + dx, ny = ky + dy;
+      if (!inBoard(nx, ny)) continue;
+      const ni = idx(nx, ny);
+      if (!isBlock(grid[ni]) && !seen.has(ni)) { seen.add(ni); q.push(ni); }
+    }
+  }
+  return empties === 1;                          // 이 칸이 영역의 마지막 빈칸
+}
+
+function executeSpread() {
+  let target = nextSpread;
+  if (target === null || grid[target] !== EMPTY || !isAdjacentToEnemy(target) || isSuicideCell(target)) {
+    target = pickSpreadCell();                   // 예고 무효(막힘/자살화) → 재선택
+  }
+  if (target !== null) {
+    grid[target] = ENEMY;
+    flashes.push({ c: target, t: 1, col: '217,74,61' });   // 확산 순간 표시
+  }
+  nextSpread = null;
+}
+
+function isAdjacentToEnemy(i) {
+  const cx = i % N, cy = (i / N) | 0;
+  return DIRS.some(([dx, dy]) =>
+    inBoard(cx + dx, cy + dy) && grid[idx(cx + dx, cy + dy)] === ENEMY);
+}
+
+function pickSpreadCell() {
+  const frontier = new Set();
+  for (let i = 0; i < N * N; i++) {
+    if (grid[i] !== ENEMY) continue;
+    const cx = i % N, cy = (i / N) | 0;
+    for (const [dx, dy] of DIRS) {
+      const nx = cx + dx, ny = cy + dy;
+      if (inBoard(nx, ny) && grid[idx(nx, ny)] === EMPTY) frontier.add(idx(nx, ny));
+    }
+  }
+  if (frontier.size === 0) return null;
+  const weigh = (allowSuicide) => {
+    const out = [];
+    for (const i of frontier) {
+      if (!allowSuicide && isSuicideCell(i)) continue;   // [자살 확산 금지] 대안이 있으면 마지막 빈칸 회피
+      const cx = i % N, cy = (i / N) | 0;
+      let openness = 0;
+      for (const [dx, dy] of DIRS) {
+        const nx = cx + dx, ny = cy + dy;
+        if (inBoard(nx, ny) && grid[idx(nx, ny)] === EMPTY) openness++;
+      }
+      const w = 1 + openness * 2;
+      for (let j = 0; j < w; j++) out.push(i);
+    }
+    return out;
+  };
+  let weighted = weigh(false);
+  if (weighted.length === 0) weighted = weigh(true);   // 갈 곳이 자살 칸뿐 → 어쩔 수 없이 진입 (강제 자충)
+  return weighted[Math.floor(prng() * weighted.length)];
+}
+
+function computeNextSpread() { nextSpread = pickSpreadCell(); }
+
+// [A-1] 예고 유효성: 실행(executeSpread)과 같은 기준으로 매 프레임 판정 — 예고가 거짓말하는 창 제거.
+// 예고 칸이 막히거나/비인접화되거나/자살화되면 숨김. 단 안전 칸이 전무하면(강제 자충 예정) 그대로 유효.
+function telegraphValid() {
+  if (nextSpread === null || grid[nextSpread] !== EMPTY || !isAdjacentToEnemy(nextSpread)) return false;
+  if (!isSuicideCell(nextSpread)) return true;
+  for (let i = 0; i < N * N; i++) {              // 자살 칸 예고: 안전한 대안이 있으면 재선택될 것 → 무효
+    if (grid[i] !== EMPTY || !isAdjacentToEnemy(i)) continue;
+    if (!isSuicideCell(i)) return false;
+  }
+  return true;                                   // 전부 자살 칸 → 강제 진입 예정, 예고 유효
+}
+
+
+
+// ===== 클리어/실패 =====
+function checkEnd(preEnemyTurn = false) {
+  if (gameOver) return true;
+  if (enemyCount() === 0) { onClear(); return true; }
+  if (stonesLeft <= 0) {
+    // [v37 유예] 확산 레벨: 마지막 돌 직후엔 실패하지 않고 다가올 적 턴(강제 자충 → 파동)까지 지켜본다.
+    // 적 턴 종료 후의 checkEnd()가 최종 판정 — 그때도 잔존이면 돌 소진.
+    if (preEnemyTurn && level.spread && turnLeft <= 0) return false;
+    onFail('돌 소진');
+    return true;
+  }
+  return false;
+}
+
+function onClear() {
+  gameOver = true;
+  // [v30] 연출 종료 대기: 화살·폭발이 다 끝난 뒤 배너 표시 — 판 중앙 배너가 화살을 가리지 않게
+  let fxEnd = performance.now();
+  for (const d of dying) fxEnd = Math.max(fxEnd, d.at);
+  for (const b of bolts) fxEnd = Math.max(fxEnd, b.at + b.dur + 180);
+  const wait = Math.max(0, fxEnd - performance.now()) + 150;
+  if (levelIdx + 1 < LEVELS.length) {
+    advanceTimer = setTimeout(() => {
+      toast = { text: '클리어!', t: 1, sticky: false };
+      advanceTimer = setTimeout(() => loadLevel(levelIdx + 1), 1200);   // 클리어 → 새 시드 (reuse 기본값 false)
+    }, wait);
+  } else {
+    advanceTimer = setTimeout(() => {
+      msgEl.textContent = '전체 클리어!';
+      overlay.classList.remove('hidden');
+    }, wait);
+  }
+}
+
+function onFail(reason) {
+  gameOver = true;
+  failWaiting = true;
+  toast = { text: `${reason} — 탭해서 재시도`, t: 1, sticky: true };
+}
+
+// ===== 레이아웃/렌더링 =====
+let size = 0, cell = 0, pad = 0, barTop = 0, barH = 0;
+const WALL_COLOR = '#3478f6';                         // [v39] 내 블록 단일 파랑 — 손상은 색이 아니라 숫자로만 표현
+
+function resize() {
+  const stage = document.getElementById('stage');
+  size = Math.min(stage.clientWidth - 16, (stage.clientHeight - 16) / 1.18, 520);
+  size = Math.max(size, 140);   // 레이아웃 초기화·회전 순간 clientHeight가 0이면 size가 음수가 됨 → roundRect 음수 반경 크래시 방지
+  const h = size * 1.18;
+  const dpr = window.devicePixelRatio || 1;
+  cv.width = size * dpr;
+  cv.height = h * dpr;
+  cv.style.width = size + 'px';
+  cv.style.height = h + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  pad = size * 0.03;
+  cell = (size - pad * 2) / N;
+  barTop = size;
+  barH = h - size;
+}
+
+function drawCell(x, y, color, r = 0.42) {
+  ctx.fillStyle = color;
+  const px = pad + x * cell, py = pad + y * cell;
+  ctx.beginPath();
+  ctx.roundRect(px + cell * (0.5 - r), py + cell * (0.5 - r), cell * r * 2, cell * r * 2, cell * 0.16);
+  ctx.fill();
+}
+
+function drawEnemy(x, y) {
+  drawCell(x, y, '#d94a3d', 0.44);
+  ctx.fillStyle = '#fff';
+  ctx.font = `700 ${cell * 0.34}px system-ui`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('1', pad + (x + .5) * cell, pad + (y + .52) * cell);
+}
+
+function draw(now) {
+  const h = size * 1.18;
+  ctx.clearRect(0, 0, size, h);
+  ctx.save();
+  if (shake > 0.5) ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
+  ctx.fillStyle = '#c9a45c';
+  ctx.fillRect(0, 0, size, size);
+  ctx.strokeStyle = 'rgba(60,40,10,.4)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= N; i++) {
+    const p = pad + i * cell;
+    ctx.beginPath(); ctx.moveTo(pad, p); ctx.lineTo(size - pad, p); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p, pad); ctx.lineTo(p, size - pad); ctx.stroke();
+  }
+
+  for (const f of flashes) {
+    const x = f.c % N, y = (f.c / N) | 0;
+    ctx.fillStyle = `rgba(${f.col},${f.t * 0.7})`;
+    ctx.fillRect(pad + x * cell, pad + y * cell, cell, cell);
+  }
+
+  // 확산 예고 (유효할 때만 — 예고 = 적의 진짜 다음 수)
+  if (!gameOver && telegraphValid()) {
+    const x = nextSpread % N, y = (nextSpread / N) | 0;
+    const pulse = 0.35 + 0.35 * Math.sin(now / 250);
+    ctx.strokeStyle = `rgba(217,74,61,${pulse + 0.3})`;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 3]);
+    ctx.strokeRect(pad + x * cell + 3, pad + y * cell + 3, cell - 6, cell - 6);
+    ctx.setLineDash([]);
+    ctx.fillStyle = `rgba(217,74,61,${pulse * 0.4})`;
+    ctx.fillRect(pad + x * cell + 3, pad + y * cell + 3, cell - 6, cell - 6);
+  }
+
+  // 보드 오브젝트
+  const dyingSet = new Set(dying.filter(d => !d.done).map(d => d.c));   // 폭발 대기 적: 터질 때까지 그려짐
+  for (let i = 0; i < N * N; i++) {
+    const x = i % N, y = (i / N) | 0;
+    const v = grid[i];
+    if (dyingSet.has(i)) { drawEnemy(x, y); continue; }
+    if (isBlock(v)) {
+      drawCell(x, y, WALL_COLOR);
+      ctx.fillStyle = 'rgba(255,255,255,.9)';   // 파랑 배경 공통 — 흰 글자 대비
+      ctx.font = `700 ${cell * 0.32}px system-ui`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(v, pad + (x + .5) * cell, pad + (y + .52) * cell);
+    } else if (v === ENEMY) drawEnemy(x, y);
+  }
+
+  // 배치 미리보기 (누르는 중)
+  if (!gameOver && hover !== null) {
+    const [hx, hy] = hover;
+    const hi = idx(hx, hy);
+    const ok = grid[hi] === EMPTY && stonesLeft > 0;   // 빈칸이면 어디든 배치 가능
+    ctx.fillStyle = ok ? 'rgba(70,180,110,.55)' : 'rgba(220,70,60,.45)';
+    ctx.fillRect(pad + hx * cell, pad + hy * cell, cell, cell);
+
+    // 포획 미리보기
+    if (ok) {
+      const sim = grid.slice();
+      const i2 = idx(hx, hy);
+      sim[i2] = level.hp || 1;
+      const pulse = 0.5 + 0.5 * Math.sin(now / 150);
+      for (const c of computeShots(sim).shots.map(s => s.to)) {   // 이 수로 실제 화살 맞는 적에만 X (예고 = 실제)
+        const x = c % N, y = (c / N) | 0;
+        ctx.strokeStyle = `rgba(255,255,255,${0.45 + pulse * 0.55})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(pad + (x + .5) * cell, pad + (y + .5) * cell, cell * (0.44 + pulse * 0.06), 0, Math.PI * 2);
+        ctx.moveTo(pad + (x + .32) * cell, pad + (y + .32) * cell);
+        ctx.lineTo(pad + (x + .68) * cell, pad + (y + .68) * cell);
+        ctx.moveTo(pad + (x + .68) * cell, pad + (y + .32) * cell);
+        ctx.lineTo(pad + (x + .32) * cell, pad + (y + .68) * cell);
+        ctx.stroke();
+      }
+    }
+  }
+
+  // [v30] 포획 화살 + [v33] 전투 화살: 발사 → 명중 후 180ms 잔류 페이드
+  // 테두리로 진영 구분 — 포획(내 벽 발사) = 흰 테두리, 전투(적 발사) = 어두운 테두리
+  for (const b of bolts) {
+    const grow = Math.min(1, (now - b.at) / b.dur);   // 0→1 신장
+    if (grow <= 0) continue;
+    const fade = 1 - Math.max(0, now - (b.at + b.dur)) / 180;
+    if (fade <= 0) continue;
+    const edge = b.combat ? 'rgba(27,27,31,.9)' : 'rgba(255,255,255,.9)';
+    const fx = pad + (b.from % N + .5) * cell, fy = pad + (((b.from / N) | 0) + .5) * cell;
+    const tx = pad + (b.to % N + .5) * cell,   ty = pad + (((b.to / N) | 0) + .5) * cell;
+    const ex = fx + (tx - fx) * grow, ey = fy + (ty - fy) * grow;   // 화살 끝점
+    const ang = Math.atan2(ty - fy, tx - fx);
+    const hw = cell * 0.18;                            // 화살촉 크기
+    ctx.globalAlpha = fade;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = edge;                            // 외곽선: 적(빨강)·판(황토) 위 대비 확보
+    ctx.lineWidth = 7;
+    ctx.beginPath(); ctx.moveTo(fx, fy); ctx.lineTo(ex, ey); ctx.stroke();
+    ctx.strokeStyle = '#d94a3d';
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(fx, fy); ctx.lineTo(ex, ey); ctx.stroke();
+    ctx.fillStyle = '#d94a3d';                         // 화살촉: 공격 방향 삼각형
+    ctx.beginPath();
+    ctx.moveTo(ex + Math.cos(ang) * hw, ey + Math.sin(ang) * hw);
+    ctx.lineTo(ex + Math.cos(ang + 2.5) * hw, ey + Math.sin(ang + 2.5) * hw);
+    ctx.lineTo(ex + Math.cos(ang - 2.5) * hw, ey + Math.sin(ang - 2.5) * hw);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = edge;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  }
+
+  // 포획 파편
+  for (const p of particles) {
+    ctx.fillStyle = `rgba(217,74,61,${Math.max(0, p.t)})`;
+    ctx.fillRect(p.x - p.s / 2, p.y - p.s / 2, p.s, p.s);
+  }
+  ctx.restore();
+
+  // 하단 바: 남은 턴(돌) 수 — 배치 순간 팝, 적 턴 중엔 상태 표시
+  ctx.fillStyle = '#26262b';
+  ctx.fillRect(0, barTop, size, barH);
+  if (level && enemyPending) {
+    // 적 턴 처리 중: 빈 큐 깜빡임 대신 상태 표시
+    ctx.fillStyle = 'rgba(232,228,218,.6)';
+    ctx.font = `700 ${size * 0.036}px system-ui`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('적 턴…', size / 2, barTop + barH * 0.5);
+  } else if (level) {
+    // 남은 턴수: 큰 숫자 하나. 배치 순간 커졌다가 작아지는 팝 (stonePop 1→0)
+    const ease = stonePop * stonePop;                        // 감속 곡선
+    const fs = size * 0.075 * (1 + 0.6 * ease);
+    ctx.fillStyle = stonesLeft <= 2 ? '#d94a3d' : '#e8e4da'; // 2턴 이하 경고색
+    ctx.font = `800 ${fs}px system-ui`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(stonesLeft, size / 2, barTop + barH * 0.48);
+    ctx.fillStyle = 'rgba(232,228,218,.45)';
+    ctx.font = `700 ${size * 0.028}px system-ui`;
+    ctx.fillText('턴', size / 2 + fs * 0.75, barTop + barH * 0.52);
+  }
+
+  // 토스트 배너
+  if (toast) {
+    const alpha = toast.sticky ? 1 : Math.max(0, toast.t);
+    const bw = size * 0.82, bh = size * 0.15;
+    ctx.fillStyle = `rgba(20,20,24,${0.78 * alpha})`;
+    ctx.beginPath();
+    ctx.roundRect((size - bw) / 2, size * 0.42 - bh / 2, bw, bh, bh / 2);
+    ctx.fill();
+    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+    ctx.font = `700 ${size * 0.055}px system-ui`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(toast.text, size / 2, size * 0.42);
+  }
+}
+
+// ===== 루프 =====
+let lastT = 0;
+function loop(t) {
+  const dt = t - lastT;
+  lastT = t;
+  for (const f of flashes) f.t -= dt / 450;
+  flashes = flashes.filter(f => f.t > 0);
+  for (const p of particles) {
+    p.x += p.vx * dt / 1000;
+    p.y += p.vy * dt / 1000;
+    p.vy += cell * 14 * dt / 1000;
+    p.t -= dt / 650;
+  }
+  particles = particles.filter(p => p.t > 0);
+  bolts = bolts.filter(b => t <= b.at + b.dur + 200);  // [v30] 잔류 페이드 종료 후 정리
+  // [v34] 반격 명중 처리: 화살이 닿는 순간 벽 내구도 감소 (파괴 시 빈칸)
+  if (pendingHits.length) {
+    const rest = [];
+    for (const hit of pendingHits) {
+      if (t < hit.at) { rest.push(hit); continue; }
+      if (isBlock(grid[hit.c])) {
+        grid[hit.c]--;
+        flashes.push({ c: hit.c, t: 1, col: '220,70,60' });
+        if (grid[hit.c] === 0) grid[hit.c] = EMPTY;
+      }
+    }
+    pendingHits = rest;
+  }
+  // 연쇄 폭발 처리: 시간이 된 적부터 팡 — 각 폭발마다 플래시·파편·흔들림
+  if (dying.length) {
+    for (const d of dying) {
+      if (!d.done && t >= d.at) {
+        d.done = true;
+        flashes.push({ c: d.c, t: 1, col: '255,255,255' });
+        spawnBurst(d.c);
+        shake = Math.min(16, shake + 6);
+      }
+    }
+    if (dying.every(d => d.done)) dying = [];
+  }
+  shake = Math.max(0, shake - dt / 26);
+  stonePop = Math.max(0, stonePop - dt / 260);
+  if (toast && !toast.sticky) {
+    toast.t -= dt / 1400;
+    if (toast.t <= 0) toast = null;
+  }
+  draw(t);
+  requestAnimationFrame(loop);
+}
+
+// ===== 입력: 누르면 미리보기, 떼면 배치 =====
+function boardCell(ev) {
+  const rect = cv.getBoundingClientRect();
+  const px = ev.clientX - rect.left, py = ev.clientY - rect.top;
+  if (py >= barTop) return null;
+  const x = Math.floor((px - pad) / cell);
+  const y = Math.floor((py - pad) / cell);
+  return inBoard(x, y) ? [x, y] : null;
+}
+
+cv.addEventListener('pointerdown', ev => {
+  if (failWaiting) { loadLevel(levelIdx, { reuse: true }); return; }   // 탭 즉시 재시도 — 같은 시드
+  if (gameOver || enemyPending || fxLock) return;
+  pressing = true;
+  hover = boardCell(ev);
+  cv.setPointerCapture(ev.pointerId);
+});
+
+cv.addEventListener('pointermove', ev => {
+  if (!pressing || gameOver) return;   // 누르고 있을 때만 미리보기 갱신
+  hover = boardCell(ev);
+});
+
+cv.addEventListener('pointerup', ev => {
+  const wasPressing = pressing;
+  pressing = false;
+  hover = null;
+  if (!wasPressing || gameOver || enemyPending || fxLock) return;
+  const c = boardCell(ev);
+  if (!c) return;
+  placeStone(c[0], c[1]);                              // 배치 (내구도 3, 적 턴 유발)
+});
+
+document.getElementById('restart').addEventListener('click', () => loadLevel(0));
+
+// [치트] HUD의 "레벨" 표기를 탭하면 다음 레벨로 점프 (마지막에서 탭하면 1로 순환)
+document.querySelector('#hud span').addEventListener('click', () => {
+  loadLevel((levelIdx + 1) % LEVELS.length);
+});
+// [치트] HUD의 "적" 표기를 탭하면 2부(전투, 레벨 9)로 점프
+document.querySelectorAll('#hud span')[1].addEventListener('click', () => loadLevel(8));
+window.addEventListener('resize', resize);
+
+resize();
+loadLevel(0);
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

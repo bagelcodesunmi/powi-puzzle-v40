@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>포위퍼즐 — 레벨 감정 곡선</title>
+<style>
+  :root {
+    --bg: #14121a;
+    --panel: #1e1a28;
+    --line: #3a3450;
+    --dim: rgba(232,228,218,.6);
+    --stone: #e8e4da;
+    --dopamine: #46b46e;
+    --stress: #d94a3d;
+    --neutral: #3478f6;
+    --warn: #e8903a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--stone); font-family: system-ui, sans-serif; padding: 28px 20px 60px; }
+  h1 { font-size: 16px; font-weight: 800; letter-spacing: .1em; margin-bottom: 4px; }
+  .sub { font-size: 12px; color: var(--dim); margin-bottom: 28px; }
+
+  /* 범례 */
+  .legend { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 24px; }
+  .leg { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--dim); }
+  .leg-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+  /* 메인 차트 */
+  .chart-wrap { overflow-x: auto; padding-bottom: 8px; }
+  .chart { display: flex; align-items: flex-end; gap: 6px; min-width: 640px; height: 260px; padding: 0 4px; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 36px; }
+  .bar-area { flex: 1; width: 100%; display: flex; align-items: flex-end; }
+  .bar { width: 100%; border-radius: 6px 6px 0 0; transition: opacity .15s; cursor: default; position: relative; }
+  .bar:hover { opacity: .75; }
+  .bar-label { position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+               font-size: 10px; font-weight: 700; color: var(--stone); white-space: nowrap; }
+  .lv-num { font-size: 11px; font-weight: 800; color: var(--dim); }
+  .lv-tag { font-size: 9px; color: var(--dim); text-align: center; line-height: 1.3; max-width: 44px; }
+
+  /* 구간 설명 섹션 */
+  .sections { margin-top: 32px; display: flex; flex-direction: column; gap: 10px; }
+  .section-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+                  display: flex; gap: 14px; align-items: flex-start; }
+  .section-badge { flex-shrink: 0; font-size: 10px; font-weight: 800; border-radius: 6px;
+                   padding: 4px 10px; margin-top: 2px; }
+  .badge-dopamine { background: var(--dopamine); color: #0a2e1a; }
+  .badge-stress    { background: var(--stress);   color: #fff; }
+  .badge-neutral   { background: var(--neutral);  color: #fff; }
+  .badge-warn      { background: var(--warn);     color: #1a0f00; }
+  .section-body h3 { font-size: 13px; font-weight: 800; margin-bottom: 3px; }
+  .section-body p  { font-size: 12px; color: var(--dim); line-height: 1.6; }
+
+  /* 통과율 라인 */
+  .rate-chart { margin-top: 28px; }
+  .rate-chart h2 { font-size: 13px; font-weight: 800; color: var(--dim); letter-spacing: .08em; margin-bottom: 12px; }
+  .rate-row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; font-size: 12px; }
+  .rate-lv { width: 50px; color: var(--dim); text-align: right; flex-shrink: 0; }
+  .rate-bar-wrap { flex: 1; height: 10px; background: var(--line); border-radius: 5px; overflow: hidden; }
+  .rate-bar-fill { height: 100%; border-radius: 5px; }
+  .rate-val { width: 38px; flex-shrink: 0; text-align: right; font-weight: 700; }
+
+  .divider { height: 1px; background: var(--line); margin: 28px 0; }
+  .note { font-size: 11px; color: var(--dim); line-height: 1.7; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<h1>포위퍼즐 — 레벨 감정 곡선</h1>
+<div class="sub">스트레스 구간 · 도파민 구간 · 통과율 시각화 | v41 기준 · 2026-07-13</div>
+
+<div class="legend">
+  <div class="leg"><div class="leg-dot" style="background:var(--dopamine)"></div>도파민 (쉽고 쾌감)</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--stress)"></div>스트레스 (어렵고 긴장)</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--neutral)"></div>학습 (새 개념 도입)</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--warn)"></div>전환점 (보드/규칙 변화)</div>
+</div>
+
+<div class="chart-wrap">
+<div class="chart" id="mainChart"></div>
+</div>
+
+<div class="divider"></div>
+
+<div class="rate-chart">
+  <h2>레벨별 통과율 (시드 검증 기준)</h2>
+  <div id="rateChart"></div>
+  <div class="note">
+    * 통과율 = mulberry32 시드 고정 후 min 예산 내 클리어 가능한 시드 비율.<br>
+    * ~100%는 소규모 샘플(3개 이하) 전수 통과. 6번(60%)·15번(15%)은 개선 진행 중.
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<div class="sections" id="sections"></div>
+
+<script>
+const LEVELS = [
+  { lv:1,  board:'3×3', budget:1,  combat:false, seeds:1, rate:100, type:'dopamine',  tag:'1탭 포획',      desc:'첫 판. 벽 2개 프리셋 → 탭 1회로 즉시 클리어. 성공 보장된 도파민 샘플.' },
+  { lv:2,  board:'3×3', budget:3,  combat:false, seeds:1, rate:100, type:'neutral',   tag:'추격 봉인',     desc:'확산 적 추격 봉인 첫 경험. 새 개념(확산 예고) 학습 구간.' },
+  { lv:3,  board:'4×4', budget:6,  combat:false, seeds:3, rate:100, type:'neutral',   tag:'4×4 진입',      desc:'보드 확장 첫 경험. 내부 배치 연습. 여유 예산으로 실패 부담 낮음.' },
+  { lv:4,  board:'4×4', budget:7,  combat:false, seeds:3, rate:100, type:'dopamine',  tag:'코너 양면',     desc:'코너 2기 동시 봉쇄. 멀티 포위 첫 성공 → 쾌감 상승.' },
+  { lv:5,  board:'4×4', budget:7,  combat:false, seeds:3, rate:100, type:'dopamine',  tag:'좁은 방 2기',   desc:'4×4 연습 마무리. 익숙해진 보드에서 자신감 확인.' },
+  { lv:6,  board:'5×5', budget:9,  combat:false, seeds:5, rate:95,  type:'neutral',   tag:'5×5 진입',      desc:'보드 확장 + 내부 배치. 예산 8→9로 상향 (낙차 40%p → 해소). 5×5 첫 경험 완충.' },
+  { lv:7,  board:'5×5', budget:8,  combat:false, seeds:4, rate:100, type:'dopamine',  tag:'변근접',        desc:'6번 직후 회복 구간. 변근접 배치는 내부보다 쉬워 숨 돌리기 효과.' },
+  { lv:8,  board:'5×5', budget:9,  combat:false, seeds:3, rate:75,  type:'stress',    tag:'정중앙',        desc:'5×5 정중앙 — 가장 확산 여지가 많은 위치. 예산 +1로 완충.' },
+  { lv:9,  board:'3×3', budget:1,  combat:true,  seeds:1, rate:100, type:'warn',      tag:'전투 시작',     desc:'전투 규칙 첫 등장. 보드를 3×3으로 줄여 반격 충격 완화. 1탭 클리어로 도파민 확보.' },
+  { lv:10, board:'3×3', budget:3,  combat:true,  seeds:3, rate:100, type:'neutral',   tag:'전투 학습',     desc:'반격 있는 3×3. 전투 패턴 학습 구간.' },
+  { lv:11, board:'4×4', budget:4,  combat:true,  seeds:4, rate:100, type:'neutral',   tag:'4×4 전투',      desc:'전투 + 보드 확장. 새 조합 학습. 예산 4로 빡빡하지만 코너라 해법 명확.' },
+  { lv:12, board:'4×4', budget:6,  combat:true,  seeds:4, rate:100, type:'dopamine',  tag:'내부 전투',     desc:'전투 규칙 익숙해진 후 내부 배치. 패턴 완성 쾌감.' },
+  { lv:13, board:'5×5', budget:8,  combat:true,  seeds:5, rate:83,  type:'stress',    tag:'5×5 전투',      desc:'전투 + 5×5 조합 첫 등장. 통과율 83% — 긴장감 시작.' },
+  { lv:14, board:'5×5', budget:8,  combat:true,  seeds:5, rate:71,  type:'stress',    tag:'변근접 전투',   desc:'피날레 직전 관문. 통과율 71%. 실패 후 재도전 욕구 유발 구간.' },
+  { lv:15, board:'6×6', budget:12, combat:true,  seeds:5, rate:15,  type:'stress',    tag:'6×6 피날레',    desc:'보드 확장 + 내구도2 + 2기 동시. 통과율 15% → 목표 40~60%. 가장 강한 스트레스. 클리어 시 최대 도파민.' },
+];
+
+const COLOR = {
+  dopamine: 'var(--dopamine)',
+  stress:   'var(--stress)',
+  neutral:  'var(--neutral)',
+  warn:     'var(--warn)',
+};
+
+// 메인 바 차트 — 높이 = 예산 기준 난이도 체감
+const maxBudget = Math.max(...LEVELS.map(l => l.budget));
+const chart = document.getElementById('mainChart');
+LEVELS.forEach(l => {
+  const heightPct = Math.round((l.budget / maxBudget) * 100);
+  const col = document.createElement('div');
+  col.className = 'col';
+  col.innerHTML = `
+    <div class="bar-area">
+      <div class="bar" style="height:${heightPct}%;background:${COLOR[l.type]}" title="Lv${l.lv} · 예산 ${l.budget} · 통과율 ${l.rate === 100 ? '~100' : l.rate}%">
+        <span class="bar-label">${l.budget}턴</span>
+      </div>
+    </div>
+    <div class="lv-num">Lv${l.lv}</div>
+    <div class="lv-tag">${l.tag}</div>
+  `;
+  chart.appendChild(col);
+});
+
+// 통과율 바 차트
+const rateChart = document.getElementById('rateChart');
+LEVELS.forEach(l => {
+  const rate = l.rate === 100 ? 99 : l.rate; // ~100%는 99로 표시
+  const color = rate >= 85 ? 'var(--dopamine)' : rate >= 60 ? 'var(--warn)' : 'var(--stress)';
+  const row = document.createElement('div');
+  row.className = 'rate-row';
+  row.innerHTML = `
+    <div class="rate-lv">Lv${l.lv}</div>
+    <div class="rate-bar-wrap">
+      <div class="rate-bar-fill" style="width:${rate}%;background:${color}"></div>
+    </div>
+    <div class="rate-val" style="color:${color}">${l.rate === 100 ? '~100%' : l.rate + '%'}</div>
+  `;
+  rateChart.appendChild(row);
+});
+
+// 구간 설명 카드
+const SECTION_DEFS = [
+  { range:'Lv1~5', type:'dopamine',  title:'1부 — 도파민 구간 (비전투)',
+    body:'보드 3×3→4×4. 전투 없음. 빠른 클리어와 성공 보장으로 게임 재미를 먼저 각인. Lv1은 프리셋 벽으로 1탭 즉시 클리어 — 완벽한 첫 도파민 샘플.' },
+  { range:'Lv6·8', type:'stress',    title:'첫 스트레스 구간 (5×5 진입)',
+    body:'보드 5×5로 확장. 통과율 60·75% — 처음으로 실패 가능성 등장. Lv7이 사이에 끼어 숨 돌리기 역할. 재도전 욕구를 만드는 긴장감 시작 지점.' },
+  { range:'Lv7', type:'dopamine',    title:'회복 구간 (완충 레벨)',
+    body:'Lv6 스트레스 직후 ~100% 통과. 숨 돌리기 + 자신감 회복. 이런 완충 구간이 없으면 스트레스가 이탈로 직결됨.' },
+  { range:'Lv9', type:'warn',        title:'전환점 — 전투 규칙 첫 등장',
+    body:'2부 시작. 반격 규칙이 추가되지만 보드를 3×3으로 줄여 충격 완화. 1탭 클리어로 "반격도 무섭지 않다" 체험 → 다음 레벨 진입 동기 확보.' },
+  { range:'Lv10~12', type:'neutral', title:'전투 학습 구간',
+    body:'전투 규칙을 3×3→4×4로 단계적으로 익히는 구간. 통과율 ~100% 유지. 학습이 쌓이면서 패턴 완성 쾌감 상승.' },
+  { range:'Lv13·14', type:'stress',  title:'후반 스트레스 구간 (피날레 관문)',
+    body:'전투 + 5×5 조합. 통과율 83·71%. 실패 후 재도전 욕구가 강한 구간. 예산이 동일(8턴)해도 확산 패턴이 달라 매판 긴장감 유지.' },
+  { range:'Lv15', type:'stress',     title:'피날레 — 최대 스트레스 + 최대 도파민',
+    body:'6×6 보드 + 내구도2 + 2기 동시. 통과율 15%→목표 40~60%. 지금까지의 모든 규칙을 동시에 사용해야 클리어. 성공 시 최대 도파민. 실패해도 "아깝다" 체감이 재도전 동기. ⚠️ 현재 15%는 이탈 유발 수준 — 예산/시드 조정 진행 중.' },
+];
+
+const sections = document.getElementById('sections');
+SECTION_DEFS.forEach(s => {
+  const card = document.createElement('div');
+  card.className = 'section-card';
+  card.innerHTML = `
+    <span class="section-badge badge-${s.type}">${s.range}</span>
+    <div class="section-body">
+      <h3>${s.title}</h3>
+      <p>${s.body}</p>
+    </div>
+  `;
+  sections.appendChild(card);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>레벨 랩 v2 — 포위 퍼즐 검증 도구 (v40 규칙)</title>
+<style>
+  :root {
+    --ink: #14121a; --panel: #1e1a28; --board: #262133; --line: #3a3450;
+    --stone: #e8e4da; --enemy: #d94a3d; --ok: #46b46e; --warn: #e8903a; --dim: rgba(232,228,218,.82);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { background: var(--ink); }
+  body { color: var(--stone); font-family: system-ui, sans-serif; }
+  /* ⚠️ 일부 뷰어(앱 미리보기 등)가 body 배경을 무시해 흰 화면이 됨 → 배경을 래퍼 div가 직접 칠함 */
+  #app { background: var(--ink); color: var(--stone); min-height: 100vh; width: 100%;
+         display: flex; flex-direction: column; align-items: center; padding: 20px 14px 40px; }
+  h1 { font-size: 17px; font-weight: 800; letter-spacing: .12em; margin-bottom: 2px; }
+  h1 .lab { color: var(--enemy); }
+  .sub { font-size: 12px; color: var(--dim); margin-bottom: 14px; letter-spacing: .05em; }
+  .row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; justify-content: center; }
+  .seg { display: flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg button { background: transparent; color: var(--dim); border: 0; padding: 8px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .seg button.on { background: var(--stone); color: var(--ink); }
+  #boardWrap { background: var(--board); border-radius: 14px; padding: 10px; margin: 6px 0 8px; }
+  #board { display: grid; gap: 6px; }
+  .cell { width: 48px; height: 48px; background: var(--panel); border-radius: 9px; border: 1px solid var(--line);
+          display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; cursor: pointer; user-select: none; }
+  .cell.enemy { background: var(--enemy); color: #fff; }
+  .cell.wall { background: var(--stone); color: var(--ink); }
+  .actions { display: flex; gap: 10px; margin-bottom: 14px; }
+  .btn { border: 0; border-radius: 10px; padding: 11px 22px; font-size: 14px; font-weight: 800; cursor: pointer; }
+  .btn.primary { background: var(--stone); color: var(--ink); }
+  .btn.ghost { background: transparent; color: var(--dim); border: 1px solid var(--line); }
+  .btn:disabled { opacity: .35; cursor: default; }
+  .btn.sm { padding: 9px 14px; font-size: 12px; white-space: nowrap; }
+  #prog { font-size: 13px; color: var(--dim); min-height: 18px; margin-bottom: 6px; }
+  #pbar { width: 220px; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; margin-bottom: 10px; display: none; }
+  #pbar.run { display: block; }
+  #pbar i { display: block; width: 40%; height: 100%; background: var(--stone); border-radius: 2px; animation: slide 1.1s ease-in-out infinite; }
+  @keyframes slide { 0% { transform: translateX(-100%); } 100% { transform: translateX(650%); } }
+  @media (prefers-reduced-motion: reduce) { #pbar i { animation: none; width: 100%; opacity: .4; } }
+  #result { width: 100%; max-width: 420px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+            padding: 16px; display: none; }
+  #result.show { display: block; }
+  .rTitle { font-size: 12px; letter-spacing: .1em; color: var(--dim); margin-bottom: 10px; }
+  .big { font-size: 34px; font-weight: 800; line-height: 1; }
+  .big small { font-size: 13px; color: var(--dim); font-weight: 700; margin-left: 6px; }
+  .badge { display: inline-block; font-size: 11px; font-weight: 800; border-radius: 6px; padding: 3px 8px; margin-left: 10px; vertical-align: middle; }
+  .badge.sure { background: var(--ok); color: var(--ink); }
+  .badge.tent { background: var(--warn); color: var(--ink); }
+  .stats { display: flex; gap: 18px; margin: 12px 0; font-size: 13px; }
+  .stats b { display: block; font-size: 17px; }
+  .stats span { color: var(--dim); font-size: 12px; }
+  textarea { width: 100%; background: var(--ink); color: var(--stone); border: 1px solid var(--line); border-radius: 8px;
+             font-family: ui-monospace, monospace; font-size: 12px; padding: 8px; height: 80px; resize: none; margin-top: 6px; }
+  .note { font-size: 12.5px; color: var(--dim); margin-top: 10px; line-height: 1.5; }
+
+  /* ---------- 초보자 안내 ---------- */
+  #helpBtn { background: transparent; color: var(--dim); border: 1px solid var(--line); border-radius: 8px;
+             padding: 6px 14px; font-size: 12px; font-weight: 700; cursor: pointer; margin-bottom: 14px; }
+  #helpPanel { display: none; width: 100%; max-width: 420px; background: var(--panel); border: 1px solid var(--line);
+               border-radius: 14px; padding: 16px; margin-bottom: 16px; font-size: 14px; line-height: 1.7; }
+  #helpPanel.show { display: block; }
+  #helpPanel b { color: var(--stone); }
+  #helpPanel p { color: var(--dim); margin: 4px 0 10px; }
+  #helpPanel ol { padding-left: 18px; color: var(--dim); }
+  #helpPanel li { margin-bottom: 7px; }
+  .hint { font-size: 13px; color: var(--dim); margin: -4px 0 14px; text-align: center; line-height: 1.55; max-width: 360px; }
+
+  /* ---------- 시드 뽑기 ---------- */
+  #seedBar { width: 100%; max-width: 420px; background: var(--panel); border: 1px solid var(--line);
+             border-radius: 14px; padding: 14px; margin-top: 10px; display: none; }
+  #seedBar.show { display: block; }
+  .seedTitle { font-size: 12px; letter-spacing: .1em; color: var(--dim); margin-bottom: 10px; }
+  .seedRow { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+  .seedRow label { font-size: 13px; color: var(--dim); white-space: nowrap; }
+  .seedRow input[type=number] { width: 60px; background: var(--ink); color: var(--stone);
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 13px; }
+  #seedProg { font-size: 12.5px; color: var(--dim); min-height: 16px; margin: 4px 0; }
+  #seedPbar { width: 100%; height: 4px; border-radius: 2px; background: var(--line); overflow: hidden; margin-bottom: 8px; display: none; }
+  #seedPbar.run { display: block; }
+  #seedPbar i { display: block; width: 40%; height: 100%; background: var(--ok); border-radius: 2px; animation: slide 1.1s ease-in-out infinite; }
+  #seedOut { width: 100%; background: var(--ink); color: var(--stone); border: 1px solid var(--line);
+             border-radius: 8px; font-family: ui-monospace, monospace; font-size: 12px;
+             padding: 8px; height: 60px; resize: none; margin-top: 4px; display: none; }
+  #seedOut.show { display: block; }
+
+  /* ---------- 배치 저장 ---------- */
+  #saveBar { width: 100%; max-width: 420px; background: var(--panel); border: 1px solid var(--line);
+             border-radius: 14px; padding: 14px; margin-top: 14px; }
+  .saveTitle { font-size: 12px; letter-spacing: .1em; color: var(--dim); margin-bottom: 10px; }
+  .saveRow { display: flex; gap: 8px; margin-bottom: 8px; }
+  .saveRow input[type=text], .saveRow select { flex: 1; min-width: 0; background: var(--ink); color: var(--stone);
+             border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; font-size: 13px; }
+  #saveMsg { font-size: 12.5px; color: var(--dim); min-height: 16px; line-height: 1.5; margin-top: 2px; }
+
+  /* ---------- 일괄 검토 (난이도 곡선) ---------- */
+  #batchResult { display: none; width: 100%; max-width: 420px; background: var(--panel); border: 1px solid var(--line);
+                 border-radius: 14px; padding: 16px; margin-top: 14px; }
+  #batchResult.show { display: block; }
+  .bRow { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; }
+  .bName { flex: 0 0 36%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bBarWrap { flex: 1; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+  .bBarWrap i { display: block; height: 100%; background: var(--enemy); border-radius: 4px; }
+  .bVal { flex: 0 0 auto; font-size: 12px; color: var(--dim); }
+  .bBad { color: var(--warn); font-size: 12px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <h1>레벨 <span class="lab">랩</span> <span style="font-size:11px;color:var(--dim)">v2</span></h1>
+  <div class="sub">적 배치 → 검토 → 최소 턴 산출 · 포위 퍼즐 v40 규칙</div>
+
+  <button id="helpBtn">사용법 보기</button>
+  <div id="helpPanel">
+    <b>이 도구는 무엇인가요?</b>
+    <p>포위 퍼즐(v40 규칙)의 레벨이 실제로 풀 수 있는지, 클리어에 최소 몇 턴이 필요한지 계산합니다.
+       규칙: 완전 밀폐 포획(최대 매칭·겹 벗기기), 포위 순간 반격 총격전(전투), 자살 확산 금지, 유예 판정.</p>
+    <ol>
+      <li><b>보드 크기</b>와 <b>전투</b> 여부를 고릅니다. 전투를 켜면 포위 순간 적 전원이 반격 화살을 쏩니다.</li>
+      <li><b>내구도</b>는 내 돌의 체력입니다. 기본 1(반격 1발 = 파괴), 2기 레벨 등 특수판만 2를 씁니다.</li>
+      <li>보드의 칸을 탭해 적을 놓습니다. 다시 탭하면 지워집니다. <b>벽</b> 모드에서는 미리 놓인 벽(HP 1~2)을 배치합니다.</li>
+      <li><b>검토</b>를 누르면 최소 턴이 계산됩니다. 3×3~5×5는 솔버 확정(5×5는 1~3분 소요 가능), 6×6은 봇 근사(잠정)입니다.</li>
+      <li>결과 아래 <b>레벨 데이터 복사</b>로 게임 코드에 붙여넣습니다 (v40 포맷).</li>
+      <li>배치는 <b>배치 저장</b>으로 보관하고, <b>파일로 내보내기</b>로 JSON 백업할 수 있습니다.</li>
+      <li><b>일괄 검토</b>로 저장된 배치 전체의 min을 계산해 난이도 곡선을 확인하세요.</li>
+    </ol>
+  </div>
+
+  <div class="row">
+    <div class="seg" id="sizeSeg">
+      <button data-n="3">3×3</button><button data-n="4" class="on">4×4</button><button data-n="5">5×5</button><button data-n="6">6×6</button>
+    </div>
+    <div class="seg" id="combatSeg">
+      <button data-c="0" class="on">전투 없음</button><button data-c="1">전투</button>
+    </div>
+  </div>
+  <div class="hint">전투를 켜면 포위(완전 밀폐) 순간 그 무리의 적 전원이 반격 화살을 쏩니다 — 벽당 1타 1데미지</div>
+  <div class="row">
+    <div class="seg" id="modeSeg">
+      <button data-m="enemy" class="on">적</button>
+      <button data-m="wall">벽</button>
+    </div>
+    <div class="seg" id="hpSeg">
+      <button data-p="1" class="on">내구도 1</button><button data-p="2">내구도 2</button>
+    </div>
+    <div class="seg" id="wallSeg" style="display:none">
+      <button data-h="1" class="on">HP1</button><button data-h="2">HP2</button>
+    </div>
+  </div>
+  <div class="hint" id="placeHint">칸을 탭하면 적 배치, 다시 탭하면 제거 · 내구도는 내가 놓는 돌의 체력 (게임의 hp 플래그)</div>
+
+  <div id="boardWrap"><div id="board"></div></div>
+  <div class="hint">⚠️ 확산형 2기 이상은 내구도 1에서 발산(클리어 불가)이 검증돼 있습니다 — 2기는 내구도 2로 검토하세요</div>
+
+  <div class="actions">
+    <button class="btn primary" id="runBtn">검토</button>
+    <button class="btn ghost" id="stopBtn" disabled>중지</button>
+    <button class="btn ghost" id="clearBtn">비우기</button>
+  </div>
+  <div id="prog"></div>
+  <div id="pbar"><i></i></div>
+
+  <div id="result">
+    <div class="rTitle">검토 결과</div>
+    <div><span class="big" id="minOut"></span><span class="badge" id="badge"></span></div>
+    <div class="stats">
+      <div><b id="wrOut"></b><span>봇 승률 (최소 예산, 1000판)</span></div>
+      <div><b id="fmOut"></b><span id="fmLabel">봇 중앙값 턴</span></div>
+    </div>
+    <textarea id="lineOut" readonly></textarea>
+    <button class="btn ghost" id="copyBtn" style="margin-top:8px">레벨 데이터 복사</button>
+    <div class="note" id="noteOut"></div>
+  </div>
+
+  <div id="seedBar">
+    <div class="seedTitle">시드 뽑기 — 검증된 시드 자동 탐색</div>
+    <div class="seedRow">
+      <label>목표 시드 수</label>
+      <input type="number" id="seedTarget" value="3" min="1" max="10">
+      <label style="margin-left:8px">시드당 제한(초)</label>
+      <input type="number" id="seedTimeLimit" value="8" min="2" max="60">
+      <button class="btn primary sm" id="seedRunBtn">뽑기</button>
+      <button class="btn ghost sm" id="seedStopBtn" disabled>중지</button>
+    </div>
+    <div id="seedProg"></div>
+    <div id="seedPbar"><i></i></div>
+    <textarea id="seedOut" readonly placeholder="시드 뽑기 결과가 여기 나타납니다"></textarea>
+    <button class="btn ghost" id="seedCopyBtn" style="margin-top:8px;display:none">시드 포함 레벨 데이터 복사</button>
+  </div>
+
+  <div id="saveBar">
+    <div class="saveTitle">배치 저장</div>
+    <div class="saveRow">
+      <input id="saveName" type="text" placeholder="배치 이름 (예: 15레벨 후보)">
+      <button class="btn primary sm" id="saveBtn">저장</button>
+    </div>
+    <div class="saveRow">
+      <select id="saveList"></select>
+      <button class="btn ghost sm" id="loadBtn">불러오기</button>
+      <button class="btn ghost sm" id="delBtn">삭제</button>
+    </div>
+    <div class="saveRow">
+      <button class="btn ghost sm" id="exportBtn" style="flex:1">파일로 내보내기</button>
+      <button class="btn ghost sm" id="importBtn" style="flex:1">파일 가져오기</button>
+      <input id="importFile" type="file" accept=".json,application/json" hidden>
+    </div>
+    <div class="saveRow">
+      <button class="btn ghost sm" id="batchBtn" style="flex:1">저장 배치 일괄 검토 (난이도 곡선)</button>
+    </div>
+    <div id="saveMsg"></div>
+  </div>
+
+  <div id="batchResult"></div>
+</div>
+
+<script type="text/worker" id="workerSrc">
+// ═════ 레벨 랩 엔진 v2 — 포위 퍼즐 v40 규칙 미러링 ═════
+// (1) 적대적 솔버: 완전 밀폐 포획(최대 매칭·겹 벗기기) + 반격 총격전 + 자살 확산 금지 + 유예 판정
+// (2) 몬테카를로 봇(게임과 동일한 개방도 가중 확산): 6×6 잠정 min 산출용
+// 폐기 규칙 반영: 매 턴 벽 공격 없음 · 요새화 없음 · 열매 없음 · 성향 없음
+const EMPTY = 0, ENEMY = -1;
+const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+
+function makeCtx(N) {
+  const nbrs = [];
+  for (let i = 0; i < N * N; i++) {
+    const cx = i % N, cy = (i / N) | 0, a = [];
+    for (const [dx, dy] of DIRS) {
+      const nx = cx + dx, ny = cy + dy;
+      if (nx >= 0 && nx < N && ny >= 0 && ny < N) a.push(ny * N + nx);
+    }
+    nbrs.push(a);
+  }
+  return { N, nbrs, isBlock: v => v > 0 };
+}
+
+// 포획 볼리: 영역 빈칸 0(완전 밀폐) → 내 화살 최대 매칭 킬 + (전투) 반격 데미지
+// 게임 computeShots·captureRegions와 동일 판정 (벽·적 좌상단 순, 반격은 약한 벽 우선)
+function capture(b, C, combat) {
+  const seen = new Uint8Array(b.length);
+  const kills = [], hits = [];
+  for (let i = 0; i < b.length; i++) {
+    if (C.isBlock(b[i]) || seen[i]) continue;
+    const cells = [], q = [i]; seen[i] = 1;
+    let empt = 0, hasE = false;
+    while (q.length) {
+      const c = q.pop(); cells.push(c);
+      if (b[c] === EMPTY) empt++; else if (b[c] === ENEMY) hasE = true;
+      for (const n of C.nbrs[c]) if (!C.isBlock(b[n]) && !seen[n]) { seen[n] = 1; q.push(n); }
+    }
+    if (!hasE || empt > 0) continue;
+    const eset = new Set(cells);
+    const walls = new Set();
+    for (const c of eset) for (const n of C.nbrs[c]) if (C.isBlock(b[n])) walls.add(n);
+    const wOrder = [...walls].sort((a, z) => a - z);
+    const foesOf = w => C.nbrs[w].filter(n => eset.has(n)).sort((a, z) => a - z);
+    const matched = new Map();                     // 적 → 벽 (쿤 최대 매칭)
+    const aug = (w, vis) => {
+      for (const f of foesOf(w)) {
+        if (vis.has(f)) continue;
+        vis.add(f);
+        if (!matched.has(f) || aug(matched.get(f), vis)) { matched.set(f, w); return true; }
+      }
+      return false;
+    };
+    for (const w of wOrder) aug(w, new Set());
+    for (const f of matched.keys()) kills.push(f);
+    if (combat) {                                  // 반격: 밀폐 영역 적 전원 (죽는 적 포함)
+      const fOrder = [...eset].sort((a, z) => a - z);
+      const wallsOfFoe = f => C.nbrs[f].filter(n => C.isBlock(b[n])).sort((a, z) => (b[a] - b[z]) || (a - z));
+      const hitBy = new Map();                     // 벽 → 적
+      const augC = (f, vis) => {
+        for (const w of wallsOfFoe(f)) {
+          if (vis.has(w)) continue;
+          vis.add(w);
+          if (!hitBy.has(w) || augC(hitBy.get(w), vis)) { hitBy.set(w, f); return true; }
+        }
+        return false;
+      };
+      for (const f of fOrder) augC(f, new Set());
+      for (const w of hitBy.keys()) hits.push(w);
+    }
+  }
+  if (!kills.length) return false;
+  for (const f of kills) b[f] = EMPTY;             // 사망 즉시
+  for (const w of hits) { b[w]--; if (b[w] === 0) b[w] = EMPTY; }   // 반격 데미지
+  return true;
+}
+
+const enemyCnt = b => { let n = 0; for (const v of b) if (v === ENEMY) n++; return n; };
+
+function frontier(b, C) {
+  const s = new Set();
+  for (let i = 0; i < b.length; i++) if (b[i] === ENEMY) for (const n of C.nbrs[i]) if (b[n] === EMPTY) s.add(n);
+  return [...s];
+}
+function isSuicide(b, C, c) {                      // 이 칸이 자기 영역의 마지막 빈칸인가
+  const seen = new Set([c]); const q = [c]; let e = 0;
+  while (q.length) {
+    const k = q.pop();
+    if (b[k] === EMPTY) e++;
+    if (e > 1) return false;
+    for (const n of C.nbrs[k]) if (!C.isBlock(b[n]) && !seen.has(n)) { seen.add(n); q.push(n); }
+  }
+  return e === 1;
+}
+function spreadChoices(b, C) {                     // 자살 회피, 전무하면 강제 자충
+  const f = frontier(b, C);
+  const safe = f.filter(c => !isSuicide(b, C, c));
+  return safe.length ? safe : f;
+}
+function candidateMoves(b, C) {                    // 적 영역의 빈칸만 (가지치기)
+  const seen = new Uint8Array(b.length); const out = [];
+  for (let i = 0; i < b.length; i++) {
+    if (C.isBlock(b[i]) || seen[i]) continue;
+    const cells = [], q = [i]; seen[i] = 1; let hasE = false;
+    while (q.length) {
+      const c = q.pop(); cells.push(c);
+      if (b[c] === ENEMY) hasE = true;
+      for (const n of C.nbrs[c]) if (!C.isBlock(b[n]) && !seen[n]) { seen[n] = 1; q.push(n); }
+    }
+    if (hasE) for (const c of cells) if (b[c] === EMPTY) out.push(c);
+  }
+  return out;
+}
+
+// ---------- 적대적 솔버 (최악 확산 + 유예 판정) ----------
+function solveMin(cfg, cap, onProgress) {
+  const C = makeCtx(cfg.board);
+  const hp = cfg.hp || 1;
+  const b0 = new Array(C.N * C.N).fill(EMPTY);
+  for (const [x, y] of cfg.enemies) b0[y * C.N + x] = ENEMY;
+  if (cfg.walls) for (const [x, y, w] of cfg.walls) b0[y * C.N + x] = w;
+  const memo = new Map();
+  let nodes = 0;
+
+  function win(b, stones, s) {
+    nodes++;
+    if (onProgress && nodes % 30000 === 0) onProgress(nodes);
+    if (stones <= 0) return false;
+    const key = b.join(',') + '|' + stones + '|' + s;
+    const hit = memo.get(key);
+    if (hit !== undefined) return hit;
+    let result = false;
+    for (const m of candidateMoves(b, C)) {        // OR: 이기는 수 하나면 승
+      const g2 = b.slice(); g2[m] = hp;
+      capture(g2, C, cfg.combat);
+      if (enemyCnt(g2) === 0) { result = true; break; }
+      // 적 턴: 예고 s가 유효(빈칸·적 인접·비자살, 전부 자살이면 유효)하면 s, 무효면 전 선택지 분기 (AND)
+      const choices0 = spreadChoices(g2, C);
+      const sValid = s !== null && g2[s] === EMPTY && C.nbrs[s].some(n => g2[n] === ENEMY);
+      let pick;
+      if (sValid) {
+        const sSafe = !isSuicide(g2, C, s);
+        const allSui = choices0.length > 0 && choices0.every(c => isSuicide(g2, C, c));
+        pick = (sSafe || allSui) ? [s] : choices0;
+      } else pick = choices0;
+      let all = true;
+      for (const sc of pick) {
+        const g3 = g2.slice(); g3[sc] = ENEMY;
+        capture(g3, C, cfg.combat);                // 강제 자충 → 볼리 (킬 + 반격)
+        if (enemyCnt(g3) === 0) continue;          // 적 턴 중 전멸 → 이 분기 승 [유예]
+        if (stones - 1 <= 0) { all = false; break; }   // 유예 후에도 잔존 → 패배
+        let annOk = true;                          // 다음 예고도 적대적
+        for (const ann of spreadChoices(g3, C)) if (!win(g3, stones - 1, ann)) { annOk = false; break; }
+        if (!annOk) { all = false; break; }
+      }
+      if (all) { result = true; break; }
+    }
+    if (memo.size < 4000000) memo.set(key, result);   // 메모리 상한 (정확성 불변)
+    return result;
+  }
+
+  for (let k = 1; k <= cap; k++) {
+    if (onProgress) onProgress(nodes, k);
+    let ok = true;
+    for (const ann of spreadChoices(b0, C)) {      // 첫 예고도 적대적
+      if (!win(b0, k, ann)) { ok = false; break; }
+    }
+    if (ok) return { min: k, nodes };
+  }
+  return { min: null, nodes };
+}
+
+// ---------- 몬테카를로 봇 (게임과 동일한 가중 랜덤 확산) ----------
+function mcPlay(cfg, budget) {
+  const C = makeCtx(cfg.board);
+  const hp = cfg.hp || 1;
+  const b = new Array(C.N * C.N).fill(EMPTY);
+  for (const [x, y] of cfg.enemies) b[y * C.N + x] = ENEMY;
+  if (cfg.walls) for (const [x, y, w] of cfg.walls) b[y * C.N + x] = w;
+
+  function pickSpread() {                          // 게임 pickSpreadCell 미러: 개방도 가중 + 자살 회피
+    const f = frontier(b, C);
+    if (!f.length) return null;
+    const weigh = allowSui => {
+      const out = [];
+      for (const c of f) {
+        if (!allowSui && isSuicide(b, C, c)) continue;
+        let open = 0;
+        for (const n of C.nbrs[c]) if (b[n] === EMPTY) open++;
+        const w = 1 + open * 2;
+        for (let j = 0; j < w; j++) out.push(c);
+      }
+      return out;
+    };
+    let W = weigh(false);
+    if (!W.length) W = weigh(true);
+    return W[(Math.random() * W.length) | 0];
+  }
+  function enemyRegionEmpties(bb) {
+    const seen = new Uint8Array(bb.length); let tot = 0;
+    for (let i = 0; i < bb.length; i++) {
+      if (C.isBlock(bb[i]) || seen[i]) continue;
+      const cs = [], q = [i]; seen[i] = 1; let hasE = false;
+      while (q.length) {
+        const c = q.pop(); cs.push(c);
+        if (bb[c] === ENEMY) hasE = true;
+        for (const n of C.nbrs[c]) if (!C.isBlock(bb[n]) && !seen[n]) { seen[n] = 1; q.push(n); }
+      }
+      if (hasE) for (const c of cs) if (bb[c] === EMPTY) tot++;
+    }
+    return tot;
+  }
+
+  let stones = budget;
+  let guard = 0;
+  while (guard++ < 400) {
+    if (enemyCnt(b) === 0) return budget - stones;
+    if (stones <= 0) return null;
+    // 봇 수 선택: 즉시 전멸 > 적 영역 빈칸 최소화
+    let wins = [], best = null, bestScore = Infinity;
+    for (const i of candidateMoves(b, C)) {
+      const bb = b.slice(); bb[i] = hp;
+      capture(bb, C, cfg.combat);
+      if (enemyCnt(bb) === 0) { wins.push(i); continue; }
+      const sc = enemyRegionEmpties(bb);
+      if (sc < bestScore) { bestScore = sc; best = [i]; }
+      else if (sc === bestScore) best.push(i);
+    }
+    let mv;
+    if (wins.length) mv = wins[0];
+    else if (best) mv = best[(Math.random() * best.length) | 0];
+    else return null;
+    b[mv] = hp; capture(b, C, cfg.combat); stones--;
+    if (enemyCnt(b) === 0) return budget - stones;
+    // 적 턴 (유예: 돌 소진 후에도 1회 실행)
+    const t = pickSpread();
+    if (t !== null) { b[t] = ENEMY; capture(b, C, cfg.combat); }
+    if (enemyCnt(b) === 0) return budget - stones;
+    if (stones <= 0) return null;                  // 유예 후에도 잔존 → 패배
+  }
+  return null;
+}
+
+function mcStats(cfg, budget, runs, onProg) {
+  const used = [];
+  for (let r = 0; r < runs; r++) {
+    const u = mcPlay(cfg, budget); if (u !== null) used.push(u);
+    if (onProg && (r + 1) % 100 === 0) onProg(r + 1, runs);
+  }
+  used.sort((a, z) => a - z);
+  return {
+    runs, wins: used.length, winRate: used.length / runs,
+    min: used[0] ?? null,
+    p10: used.length ? used[Math.floor(used.length * 0.1)] : null,
+    median: used.length ? used[Math.floor(used.length / 2)] : null,
+  };
+}
+
+// ===== mulberry32 시드 PRNG =====
+function mulberry32(seed) {
+  return function() {
+    seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+    let z = Math.imul(seed ^ seed >>> 15, 1 | seed);
+    z = z + Math.imul(z ^ z >>> 7, 61 | z) ^ z;
+    return ((z ^ z >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+// ===== 시드 기반 단일 경로 솔버 =====
+// 시드를 고정하면 미러링+확산이 결정론적 → 플레이어 OR 분기만 남아 탐색이 빠름
+function solveWithSeed(cfg, seed, budget, deadlineMs) {
+  const C = makeCtx(cfg.board);
+  const hp = cfg.hp || 1;
+  const N = cfg.board, NN = N * N;
+  const prng = mulberry32(seed);
+  const fx = prng() < .5, fy = prng() < .5;
+  const g0 = new Array(NN).fill(EMPTY);
+  for (const [x, y] of cfg.enemies) g0[(fy ? N-1-y : y)*N + (fx ? N-1-x : x)] = ENEMY;
+  if (cfg.walls) for (const [x, y, w] of cfg.walls) g0[(fy ? N-1-y : y)*N + (fx ? N-1-x : x)] = w;
+
+  function pickSpread(b) {
+    const f = [];
+    for (let i = 0; i < NN; i++) if (b[i] === ENEMY) for (const n of C.nbrs[i]) if (b[n] === EMPTY) f.push(n);
+    if (!f.length) return null;
+    const weigh = (allowSui) => {
+      const out = [];
+      for (const c of f) {
+        if (!allowSui && isSuicide(b, C, c)) continue;
+        let op = 0; for (const n of C.nbrs[c]) if (b[n] === EMPTY) op++;
+        const w = 1 + op * 2; for (let j = 0; j < w; j++) out.push(c);
+      }
+      return out;
+    };
+    let W = weigh(false); if (!W.length) W = weigh(true);
+    return W[(prng() * W.length) | 0];
+  }
+
+  const memo = new Map();
+  function win(b, stones) {
+    if (Date.now() > deadlineMs) throw new Error('timeout');
+    const key = b.join(',') + '|' + stones;
+    const hit = memo.get(key); if (hit !== undefined) return hit;
+    let result = false;
+    if (stones <= 0) { memo.set(key, false); return false; }
+    for (const m of candidateMoves(b, C)) {
+      const g2 = b.slice(); g2[m] = hp;
+      capture(g2, C, cfg.combat);
+      if (enemyCnt(g2) === 0) { result = true; break; }
+      const next = pickSpread(g2);
+      if (next === null) { result = (stones - 1) >= 0 ? true : false; if (result) break; continue; }
+      const g3 = g2.slice(); g3[next] = ENEMY;
+      capture(g3, C, cfg.combat);
+      if (enemyCnt(g3) === 0) { result = true; break; }
+      if (stones - 1 <= 0) continue;
+      if (win(g3, stones - 1)) { result = true; break; }
+    }
+    if (memo.size < 3_000_000) memo.set(key, result);
+    return result;
+  }
+
+  try {
+    return win(g0, budget) ? 'PASS' : 'FAIL';
+  } catch (e) {
+    return 'TIMEOUT';
+  }
+}
+
+const P = t => self.postMessage({ type: 'prog', text: t });
+const mcP = tag => (r, n) => P(tag + ' ' + (r * 100 / n | 0) + '% (' + r + '/' + n + '판)');
+self.onmessage = e => {
+  const { cfg, cap, runs, mode: wMode, seedCfg } = e.data;
+
+  // 시드 탐색 모드
+  if (wMode === 'seed') {
+    const { budget, target, base, exclude, timeLimitMs } = seedCfg;
+    const found = [];
+    const excSet = new Set(exclude || []);
+    let tried = 0;
+    const RANGE = 2000;
+    for (let t = 1; t <= RANGE && found.length < target; t++) {
+      const seed = base + t;
+      if (excSet.has(seed)) continue;
+      tried++;
+      const deadline = Date.now() + timeLimitMs;
+      const r = solveWithSeed(cfg, seed, budget, deadline);
+      if (tried % 5 === 0) P(`시드 탐색 중… ${tried}개 시도, 통과 ${found.length}/${target}`);
+      if (r === 'PASS') found.push(seed);
+    }
+    self.postMessage({ type: 'seedDone', found, tried });
+    return;
+  }
+
+  try {
+    if (cfg.board <= 5) {
+      P('솔버: 최악 확산 전수 탐색 중… (5×5는 1~3분 걸릴 수 있습니다)');
+      const r = solveMin(cfg, cap, (n, k) => P('솔버 탐색 중… ' + (k ? '예산 ' + k + ' · ' : '') + (n / 1000 | 0) + 'k 상태'));
+      if (r.min === null) { self.postMessage({ type: 'done', fail: '예산 ' + cap + ' 이내 클리어 불가 (발산 가능성 — 2기 확산+내구도 1 조합인지 확인)' }); return; }
+      P('최소 턴 ' + r.min + ' 확정 — 봇 승률 측정 시작');
+      const mc = mcStats(cfg, r.min, runs, mcP('봇 측정'));
+      self.postMessage({ type: 'done', solver: r, mc, budget: r.min, certain: true });
+    } else {
+      let scan = mcStats(cfg, 12, runs, mcP('봇 탐색(예산12)'));
+      if (!scan.wins) scan = mcStats(cfg, 14, runs, mcP('봇 재탐색(예산14)'));
+      if (!scan.wins) { self.postMessage({ type: 'done', fail: '봇 기준 승리 사례 없음 (예산 14) — 발산 가능성' }); return; }
+      const mc = mcStats(cfg, scan.p10, runs, mcP('잠정 min(' + scan.p10 + ') 승률'));
+      self.postMessage({ type: 'done', mc, budget: scan.p10, certain: false, scan });
+    }
+  } catch (err) { self.postMessage({ type: 'done', fail: '오류: ' + err.message }); }
+};
+</script>
+
+<script>
+let N = 4, combat = false, stoneHp = 1;
+let mode = 'enemy', curWallHp = 1;        // 배치 대상: 'enemy' | 'wall'
+let enemies = [];   // {x, y}
+let walls = [];     // {x, y, hp}
+let worker = null;
+
+const boardEl = document.getElementById('board');
+function renderBoard() {
+  boardEl.style.gridTemplateColumns = `repeat(${N}, 48px)`;
+  boardEl.innerHTML = '';
+  for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const d = document.createElement('div');
+    d.className = 'cell';
+    const e = enemies.find(e => e.x === x && e.y === y);
+    const w = walls.find(w => w.x === x && w.y === y);
+    if (e) { d.classList.add('enemy'); d.textContent = '적'; }
+    else if (w) { d.classList.add('wall'); d.textContent = w.hp; }
+    d.onclick = () => {
+      const ei = enemies.findIndex(e => e.x === x && e.y === y);
+      const wi = walls.findIndex(w => w.x === x && w.y === y);
+      if (ei >= 0) enemies.splice(ei, 1);                       // 탭: 제거 (적)
+      else if (wi >= 0) walls.splice(wi, 1);                    // 탭: 제거 (벽)
+      else if (mode === 'enemy') enemies.push({ x, y });
+      else walls.push({ x, y, hp: curWallHp });                 // 벽 모드: 선택 HP로 배치
+      renderBoard();
+    };
+    boardEl.appendChild(d);
+  }
+}
+document.getElementById('sizeSeg').onclick = e => {
+  if (!e.target.dataset.n) return;
+  N = +e.target.dataset.n;
+  enemies = enemies.filter(en => en.x < N && en.y < N);
+  walls = walls.filter(w => w.x < N && w.y < N);
+  [...e.currentTarget.children].forEach(b => b.classList.toggle('on', b === e.target));
+  renderBoard();
+};
+document.getElementById('combatSeg').onclick = e => {
+  if (!e.target.dataset.c) return;
+  combat = e.target.dataset.c === '1';
+  [...e.currentTarget.children].forEach(b => b.classList.toggle('on', b === e.target));
+};
+document.getElementById('hpSeg').onclick = e => {
+  if (!e.target.dataset.p) return;
+  stoneHp = +e.target.dataset.p;
+  [...e.currentTarget.children].forEach(b => b.classList.toggle('on', b === e.target));
+};
+document.getElementById('clearBtn').onclick = () => { enemies = []; walls = []; renderBoard(); };
+
+// ---------- 배치 모드 ----------
+const PLACE_HINT = {
+  enemy: '칸을 탭하면 적 배치, 다시 탭하면 제거 · 내구도는 내가 놓는 돌의 체력 (게임의 hp 플래그)',
+  wall: '미리 놓인 벽 — HP를 고르고 칸을 탭하세요. 반격 화살 1발당 1씩 깎입니다 (0 = 파괴)',
+};
+function syncModeUI() {
+  document.getElementById('hpSeg').style.display = mode === 'enemy' ? '' : 'none';
+  document.getElementById('wallSeg').style.display = mode === 'wall' ? '' : 'none';
+  document.getElementById('placeHint').textContent = PLACE_HINT[mode];
+}
+document.getElementById('modeSeg').onclick = e => {
+  if (!e.target.dataset.m) return;
+  mode = e.target.dataset.m;
+  [...e.currentTarget.children].forEach(b => b.classList.toggle('on', b === e.target));
+  syncModeUI();
+};
+document.getElementById('wallSeg').onclick = e => {
+  if (!e.target.dataset.h) return;
+  curWallHp = +e.target.dataset.h;
+  [...e.currentTarget.children].forEach(b => b.classList.toggle('on', b === e.target));
+};
+
+// ---------- 초보자 안내 토글 ----------
+const helpBtn = document.getElementById('helpBtn'), helpPanel = document.getElementById('helpPanel');
+helpBtn.onclick = () => {
+  const show = helpPanel.classList.toggle('show');
+  helpBtn.textContent = show ? '사용법 닫기' : '사용법 보기';
+};
+
+// ---------- 배치 저장 (localStorage + JSON 파일) ----------
+const STORAGE_KEY = 'surroundPuzzleLevelLabV2';
+let saves = [];        // {name, board, combat, hp, enemies:[{x,y}], walls:[{x,y,hp}], savedAt}
+let storageOK = true;  // ⚠️ 샌드박스 환경(예: 미리보기 iframe)에서는 localStorage가 막힐 수 있음
+const saveMsg = document.getElementById('saveMsg');
+const msg = t => { saveMsg.textContent = t; };
+
+function loadStore() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) saves = (JSON.parse(raw).saves || []).map(migrate).filter(validSave);
+  } catch (err) { storageOK = false; }
+}
+function persist() {
+  if (!storageOK) return;
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 2, saves })); }
+  catch (err) { storageOK = false; }
+}
+function migrate(s) {  // 구버전(성향·요새화·열매·HP3) 저장 호환: 폐기 필드 제거, 값 보정
+  if (!s || typeof s !== 'object') return s;
+  const out = { name: s.name, board: s.board, combat: !!s.combat, hp: [1, 2].includes(s.hp) ? s.hp : 1, savedAt: s.savedAt || Date.now() };
+  out.enemies = Array.isArray(s.enemies) ? s.enemies.map(e => ({ x: e.x, y: e.y })) : [];
+  out.walls = Array.isArray(s.walls) ? s.walls.map(w => ({ x: w.x, y: w.y, hp: Math.min(2, Math.max(1, w.hp | 0)) })) : [];
+  return out;
+}
+function validSave(s) {
+  return s && typeof s.name === 'string' && s.name.length > 0
+    && [3, 4, 5, 6].includes(s.board) && typeof s.combat === 'boolean' && [1, 2].includes(s.hp)
+    && Array.isArray(s.enemies) && s.enemies.length > 0
+    && s.enemies.every(e => Number.isInteger(e.x) && Number.isInteger(e.y)
+        && e.x >= 0 && e.y >= 0 && e.x < s.board && e.y < s.board)
+    && Array.isArray(s.walls)
+    && s.walls.every(w => Number.isInteger(w.x) && Number.isInteger(w.y)
+        && w.x >= 0 && w.y >= 0 && w.x < s.board && w.y < s.board && [1, 2].includes(w.hp));
+}
+function refreshList(selectName) {
+  const sel = document.getElementById('saveList');
+  sel.innerHTML = '';
+  if (!saves.length) {
+    const o = document.createElement('option');
+    o.textContent = '저장된 배치 없음'; o.disabled = true; o.selected = true;
+    sel.appendChild(o); return;
+  }
+  for (const s of saves) {
+    const o = document.createElement('option');
+    o.value = s.name;
+    const wCnt = s.walls && s.walls.length ? `, 벽 ${s.walls.length}` : '';
+    const hpTag = s.hp === 2 ? ', hp2' : '';
+    o.textContent = `${s.name} (${s.board}×${s.board}, 적 ${s.enemies.length}${wCnt}${hpTag})`;
+    if (s.name === selectName) o.selected = true;
+    sel.appendChild(o);
+  }
+}
+function currentConfig(name) {
+  return { name, board: N, combat, hp: stoneHp,
+           enemies: enemies.map(e => ({ ...e })), walls: walls.map(w => ({ ...w })), savedAt: Date.now() };
+}
+function applyConfig(s) {
+  N = s.board; combat = s.combat; stoneHp = s.hp || 1;
+  enemies = s.enemies.map(e => ({ ...e }));
+  walls = (s.walls || []).map(w => ({ ...w }));
+  [...document.getElementById('sizeSeg').children].forEach(b => b.classList.toggle('on', +b.dataset.n === N));
+  [...document.getElementById('combatSeg').children].forEach(b => b.classList.toggle('on', b.dataset.c === (combat ? '1' : '0')));
+  [...document.getElementById('hpSeg').children].forEach(b => b.classList.toggle('on', +b.dataset.p === stoneHp));
+  renderBoard();
+}
+
+document.getElementById('saveBtn').onclick = () => {
+  const name = document.getElementById('saveName').value.trim();
+  if (!name) { msg('배치 이름을 입력해주세요.'); return; }
+  if (!enemies.length) { msg('저장할 적이 없습니다. 보드에 적을 배치해주세요.'); return; }
+  const item = currentConfig(name);
+  const i = saves.findIndex(s => s.name === name);
+  if (i >= 0) saves[i] = item; else saves.push(item);
+  persist(); refreshList(name);
+  msg(storageOK ? `"${name}" 저장됨.`
+                : `"${name}" 임시 저장됨 — 이 환경은 브라우저 저장이 막혀 있어 닫으면 사라집니다. 파일로 내보내기를 사용하세요.`);
+};
+document.getElementById('loadBtn').onclick = () => {
+  const s = saves.find(v => v.name === document.getElementById('saveList').value);
+  if (!s) { msg('불러올 배치를 선택해주세요.'); return; }
+  applyConfig(s);
+  document.getElementById('saveName').value = s.name;
+  msg(`"${s.name}" 불러옴.`);
+};
+document.getElementById('delBtn').onclick = () => {
+  const name = document.getElementById('saveList').value;
+  const i = saves.findIndex(v => v.name === name);
+  if (i < 0) { msg('삭제할 배치를 선택해주세요.'); return; }
+  saves.splice(i, 1);
+  persist(); refreshList();
+  msg(`"${name}" 삭제됨.`);
+};
+document.getElementById('exportBtn').onclick = () => {
+  let payload = saves;
+  if (!payload.length) {
+    if (!enemies.length) { msg('내보낼 데이터가 없습니다. 배치를 저장하거나 적을 놓아주세요.'); return; }
+    payload = [currentConfig('현재 배치')];
+  }
+  const blob = new Blob([JSON.stringify({ version: 2, saves: payload }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'level-lab-v2-saves.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  msg(`${payload.length}건을 JSON 파일로 내보냈습니다.`);
+};
+document.getElementById('importBtn').onclick = () => document.getElementById('importFile').click();
+document.getElementById('importFile').onchange = e => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      const incoming = (data.saves || []).map(migrate).filter(validSave);   // 구버전 파일도 보정 후 수용
+      if (!incoming.length) { msg('가져올 수 있는 배치가 없습니다. 이 도구에서 내보낸 JSON인지 확인해주세요.'); return; }
+      let added = 0, updated = 0;
+      for (const s of incoming) {
+        const i = saves.findIndex(v => v.name === s.name);
+        if (i >= 0) { saves[i] = s; updated++; } else { saves.push(s); added++; }
+      }
+      persist(); refreshList();
+      msg(`가져오기 완료 — 추가 ${added}건, 덮어쓰기 ${updated}건.`);
+    } catch (err) { msg('파일을 읽지 못했습니다. JSON 형식이 올바른지 확인해주세요.'); }
+  };
+  reader.readAsText(file);
+};
+
+const WORKER_SRC = document.getElementById('workerSrc').textContent;
+const prog = document.getElementById('prog'), pbar = document.getElementById('pbar');
+let progText = '', startT = 0, tick = null;
+function setBusy(on) {
+  pbar.classList.toggle('run', on);
+  runBtn.textContent = on ? '검토 중…' : '검토';
+  if (on) { startT = Date.now(); tick = setInterval(renderProg, 500); }
+  else if (tick) { clearInterval(tick); tick = null; }
+}
+function renderProg() {
+  const s = ((Date.now() - startT) / 1000).toFixed(0);
+  prog.textContent = progText + '  ·  ' + s + '초 경과';
+}
+const runBtn = document.getElementById('runBtn'), stopBtn = document.getElementById('stopBtn');
+
+function lockPanels(on) {
+  for (const id of ['saveBtn', 'loadBtn', 'delBtn', 'exportBtn', 'importBtn', 'batchBtn'])
+    document.getElementById(id).disabled = on;
+  runBtn.disabled = on; stopBtn.disabled = !on;
+}
+let workerUrl = null;
+function spawnWorker() {
+  workerUrl = URL.createObjectURL(new Blob([WORKER_SRC], { type: 'text/javascript' }));
+  return new Worker(workerUrl);
+}
+function killWorker() {
+  if (worker) { worker.terminate(); worker = null; }
+  if (workerUrl) { URL.revokeObjectURL(workerUrl); workerUrl = null; }
+}
+
+function makeCfg() {
+  const cfg = { board: N, combat, hp: stoneHp, enemies: enemies.map(e => [e.x, e.y]) };
+  if (walls.length) cfg.walls = walls.map(w => [w.x, w.y, w.hp]);
+  return cfg;
+}
+
+runBtn.onclick = () => {
+  if (!enemies.length) { prog.textContent = '적을 최소 1기 배치해주세요.'; return; }
+  const cfg = makeCfg();
+  document.getElementById('result').classList.remove('show');
+  progText = '검토 시작…';
+  lockPanels(true);
+  setBusy(true); renderProg();
+  worker = spawnWorker();
+  worker.onmessage = ev => {
+    const m = ev.data;
+    if (m.type === 'prog') { progText = m.text; renderProg(); return; }
+    killWorker();
+    lockPanels(false);
+    setBusy(false);
+    if (m.fail) { prog.textContent = m.fail; return; }
+    prog.textContent = '';
+    showResult(cfg, m);
+  };
+  worker.postMessage({ cfg, cap: 12, runs: 1000 });
+};
+stopBtn.onclick = () => {
+  batchStop = true;
+  killWorker();
+  if (workerResolve) { const r = workerResolve; workerResolve = null; r({ fail: '중지됨' }); }
+  lockPanels(false);
+  setBusy(false);
+  prog.textContent = '중지됨.';
+};
+
+// ---------- 저장 배치 일괄 검토 (난이도 곡선) ----------
+let batchStop = false, workerResolve = null;
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+function buildCfg(s) {
+  const cfg = { board: s.board, combat: s.combat, hp: s.hp || 1, enemies: s.enemies.map(e => [e.x, e.y]) };
+  if (s.walls && s.walls.length) cfg.walls = s.walls.map(w => [w.x, w.y, w.hp]);
+  return cfg;
+}
+function runWorkerAsync(cfg, onProg) {
+  return new Promise(resolve => {
+    workerResolve = resolve;
+    worker = spawnWorker();
+    worker.onmessage = ev => {
+      const m = ev.data;
+      if (m.type === 'prog') { onProg && onProg(m.text); return; }
+      killWorker(); workerResolve = null;
+      resolve(m);
+    };
+    worker.postMessage({ cfg, cap: 12, runs: 1000 });
+  });
+}
+document.getElementById('batchBtn').onclick = async () => {
+  if (!saves.length) { msg('저장된 배치가 없습니다. 먼저 배치를 저장해주세요.'); return; }
+  if (runBtn.disabled) return;
+  batchStop = false;
+  lockPanels(true);
+  document.getElementById('batchResult').classList.remove('show');
+  setBusy(true);
+  const rows = [];
+  for (let i = 0; i < saves.length; i++) {   // ⚠️ 순차 실행: 5×5 다수면 수 분~수십 분
+    if (batchStop) break;
+    const s = saves[i];
+    progText = `일괄 ${i + 1}/${saves.length} "${s.name}" 검토 중…`; renderProg();
+    const m = await runWorkerAsync(buildCfg(s), t => { progText = `일괄 ${i + 1}/${saves.length} "${s.name}" · ${t}`; renderProg(); });
+    if (batchStop) break;
+    rows.push({ name: s.name, fail: m.fail, budget: m.budget, certain: m.certain, wr: m.mc ? m.mc.winRate : null });
+  }
+  lockPanels(false);
+  setBusy(false);
+  prog.textContent = batchStop ? '일괄 검토 중지됨 (완료분까지 표시).' : '';
+  renderBatch(rows);
+};
+function renderBatch(rows) {
+  const R = document.getElementById('batchResult');
+  if (!rows.length) return;
+  const maxMin = Math.max(...rows.map(r => r.budget || 0), 1);
+  R.innerHTML = '<div class="rTitle">일괄 검토 — 난이도 곡선 (min 턴)</div>' + rows.map((r, i) => {
+    if (r.fail) return `<div class="bRow"><span class="bName">${i + 1}. ${esc(r.name)}</span><span class="bBad">✕ ${esc(r.fail)}</span></div>`;
+    const w = (r.budget / maxMin * 100).toFixed(0);
+    return `<div class="bRow"><span class="bName">${i + 1}. ${esc(r.name)}</span>` +
+           `<span class="bBarWrap"><i style="width:${w}%"></i></span>` +
+           `<span class="bVal">${r.budget}턴${r.certain ? '' : '⚠️'} · ${(r.wr * 100).toFixed(0)}%</span></div>`;
+  }).join('') +
+  '<div class="note">막대: min 턴 (최대값 대비). ⚠️는 6×6 잠정값 · %는 봇 승률. 저장 순서대로 난이도가 계단식으로 오르는지 확인하세요.</div>';
+  R.classList.add('show');
+}
+
+function showResult(cfg, m) {
+  lastResultCfg = cfg;
+  lastResultM = m;
+  // 시드 뽑기 섹션 표시 (min 확정 레벨만 — 6×6 잠정은 시드 탐색도 느려서 경고 표시)
+  const seedBar = document.getElementById('seedBar');
+  seedBar.classList.add('show');
+  document.getElementById('seedProg').textContent =
+    m.certain ? '' : '⚠️ 6×6은 시드당 탐색이 오래 걸릴 수 있습니다. 시드당 제한(초)을 높여서 사용하세요.';
+  document.getElementById('seedOut').classList.remove('show');
+  document.getElementById('seedCopyBtn').style.display = 'none';
+  const R = document.getElementById('result');
+  document.getElementById('minOut').innerHTML = m.budget + '<small>최소 턴</small>';
+  const badge = document.getElementById('badge');
+  badge.textContent = m.certain ? '솔버 확정' : '잠정 (봇 p10)';
+  badge.className = 'badge ' + (m.certain ? 'sure' : 'tent');
+  document.getElementById('wrOut').textContent = (m.mc.winRate * 100).toFixed(1) + '%';
+  document.getElementById('fmOut').textContent = m.mc.median ?? '—';
+  document.getElementById('fmLabel').textContent = m.certain ? '봇 중앙값 턴 (최소 예산)' : '봇 중앙값 턴 (예산 12)';
+  const sch = Array(m.budget).fill(1);
+  const wallsStr = cfg.walls ? ` walls: ${JSON.stringify(cfg.walls)},` : '';
+  const hpStr = cfg.hp === 2 ? ' hp: 2,' : '';
+  const line = `{ board: ${cfg.board}, enemies: ${JSON.stringify(cfg.enemies)},${wallsStr}${hpStr} schedule: ${JSON.stringify(sch)}, spread: true, combat: ${cfg.combat}, min: ${m.budget}, exactBudget: true }, // 봇 ${(m.mc.winRate * 100).toFixed(1)}% ${m.certain ? '레벨랩 솔버 확정' : '⚠️잠정 — solver-v40으로 확정 필요'}`;
+  document.getElementById('lineOut').value = line;
+  document.getElementById('noteOut').textContent = m.certain
+    ? '확정 min: 어떤 확산이 나와도 이 턴 수로 클리어 가능한 수순이 존재합니다 (제로 슬랙 예산). 승률은 단순 봇의 하한 — 사람 최적 플레이는 항상 클리어 가능.'
+    : '⚠️ 잠정 min: 6×6은 브라우저 전수 탐색이 불가능해 봇 1000판 하위 10% 기록입니다. 최악 확산 클리어 미보장 — solver-v40.mjs로 로컬 확정을 권장합니다.';
+  R.classList.add('show');
+}
+// ===== 시드 뽑기 =====
+let lastResultCfg = null, lastResultM = null;
+let seedWorker = null, seedWorkerUrl = null;
+
+function spawnSeedWorker() {
+  seedWorkerUrl = URL.createObjectURL(new Blob([WORKER_SRC], { type: 'text/javascript' }));
+  return new Worker(seedWorkerUrl);
+}
+function killSeedWorker() {
+  if (seedWorker) { seedWorker.terminate(); seedWorker = null; }
+  if (seedWorkerUrl) { URL.revokeObjectURL(seedWorkerUrl); seedWorkerUrl = null; }
+}
+function setSeedBusy(on) {
+  document.getElementById('seedPbar').classList.toggle('run', on);
+  document.getElementById('seedRunBtn').disabled = on;
+  document.getElementById('seedStopBtn').disabled = !on;
+}
+
+// 시드 base: 레벨 구성 기반 해시 (적 위치 + 보드 크기)
+function seedBase(cfg) {
+  const key = cfg.board * 100 + cfg.enemies.map(([x,y]) => y*10+x).reduce((a,b) => a+b, 0) + (cfg.combat ? 10000 : 0);
+  return key * 1000;
+}
+
+document.getElementById('seedRunBtn').onclick = () => {
+  if (!lastResultCfg || !lastResultM) return;
+  const target = Math.max(1, Math.min(10, +document.getElementById('seedTarget').value || 3));
+  const timeLimitMs = Math.max(2000, Math.min(60000, (+document.getElementById('seedTimeLimit').value || 8) * 1000));
+  const budget = lastResultM.budget;
+  const base = seedBase(lastResultCfg);
+
+  document.getElementById('seedProg').textContent = '시드 탐색 시작…';
+  document.getElementById('seedOut').classList.remove('show');
+  document.getElementById('seedCopyBtn').style.display = 'none';
+  setSeedBusy(true);
+
+  seedWorker = spawnSeedWorker();
+  seedWorker.onmessage = ev => {
+    const d = ev.data;
+    if (d.type === 'prog') { document.getElementById('seedProg').textContent = d.text; return; }
+    if (d.type === 'seedDone') {
+      killSeedWorker();
+      setSeedBusy(false);
+      const { found, tried } = d;
+      document.getElementById('seedProg').textContent =
+        `완료 — ${tried}개 시도, 통과 ${found.length}/${target}개`;
+
+      // 시드 포함 코드 라인 생성
+      const cfg = lastResultCfg, m = lastResultM;
+      const sch = Array(budget).fill(1);
+      const wallsStr = cfg.walls ? ` walls: ${JSON.stringify(cfg.walls)},` : '';
+      const hpStr = cfg.hp === 2 ? ' hp: 2,' : '';
+      const seedsStr = found.length ? ` seeds: [${found.join(',')}],` : '';
+      const line = `{ board: ${cfg.board}, enemies: ${JSON.stringify(cfg.enemies)},${wallsStr}${hpStr}${seedsStr} schedule: ${JSON.stringify(sch)}, spread: true, combat: ${cfg.combat}, min: ${budget}, exactBudget: true }, // 봇 ${(m.mc.winRate * 100).toFixed(1)}% · 시드 ${found.length}개`;
+      const out = document.getElementById('seedOut');
+      out.value = line;
+      out.classList.add('show');
+      const copyBtn = document.getElementById('seedCopyBtn');
+      copyBtn.style.display = '';
+      copyBtn._line = line;
+    }
+  };
+  seedWorker.postMessage({
+    cfg: lastResultCfg,
+    mode: 'seed',
+    seedCfg: { budget, target, base, exclude: [], timeLimitMs }
+  });
+};
+
+document.getElementById('seedStopBtn').onclick = () => {
+  killSeedWorker();
+  setSeedBusy(false);
+  document.getElementById('seedProg').textContent = '중지됨.';
+};
+
+document.getElementById('seedCopyBtn').onclick = async function() {
+  const line = this._line;
+  if (!line) return;
+  try {
+    await navigator.clipboard.writeText(line);
+    document.getElementById('seedProg').textContent = '복사됨.';
+  } catch {
+    const out = document.getElementById('seedOut');
+    out.select();
+    document.execCommand('copy');
+    document.getElementById('seedProg').textContent = '복사됨.';
+  }
+};
+
+document.getElementById('copyBtn').onclick = async () => {
+  const t = document.getElementById('lineOut');
+  try {
+    await navigator.clipboard.writeText(t.value);
+    prog.textContent = '복사되었습니다.';
+  } catch (err) {
+    t.select();
+    const ok = document.execCommand('copy');
+    prog.textContent = ok ? '복사되었습니다.' : '복사 실패 — 텍스트를 길게 눌러 직접 복사해주세요.';
+  }
+};
+loadStore();
+refreshList();
+syncModeUI();
+renderBoard();
+</script>
+</body>
+</html>
