@@ -1,0 +1,134 @@
+# 포위퍼즐 도구 레퍼런스
+
+> 에이전트는 작업 전 이 파일을 참조해 올바른 도구를 선택한다.
+> 마지막 업데이트: 2026-07-14
+
+---
+
+## 도구 선택 가이드
+
+| 목적 | 사용할 도구 |
+|------|------------|
+| 특정 레벨 클리어 가능 여부 확인 | `solver-v40.js` |
+| 레벨 15처럼 어려운 레벨 예산 탐색 | `budget-scan.js` |
+| 새 레벨 후보 자동 생성 | `find-new-levels.js` |
+| 레벨 14 근처 후보 탐색 | `find-lv14h.js` / `find14.js` |
+| 레벨 15 후보 탐색 | `find15.js` / `find-more.js` |
+| 특정 레벨에 쓸 시드 선별 | `seed-validator.js` |
+| 레벨 설계 GUI | `레벨랩-v2.html` (브라우저) |
+| 감정곡선 시각화 | `레벨-감정곡선.html` (브라우저) |
+| 게임 플레이 | `포위퍼즐-v40.html` / `포위퍼즐-v41.html` (브라우저) |
+
+---
+
+## 도구별 상세
+
+### `solver-v40.js` — 핵심 솔버
+적대적(worst-case) 방식으로 레벨 클리어 가능 여부를 검증한다.
+
+```bash
+# 전체 레벨 검증
+node solver-v40.js
+
+# 특정 레벨만 검증
+node solver-v40.js 1,2,3
+
+# 예산 지정 검증
+node solver-v40.js 12,13 --budget 4
+
+# 시간 제한 지정 (기본 90초)
+node solver-v40.js 15 --time 300
+
+# 신규 레벨 후보 JSON으로 직접 검증
+node solver-v40.js --level '{"board":4,"enemies":[[1,1]],"schedule":[1,1,1,1,1,1],"spread":true,"combat":true,"min":6}' --budget 6
+```
+
+*결과 해석*:
+- `PASS` ✅ — 최악의 확산에서도 예산 내 클리어 가능
+- `FAIL` ❌ — 예산 내 클리어 불가
+- `TIMEOUT` ⚠️ — 검증 시간 초과 (복잡한 레벨, 예산 늘리거나 구조 단순화 필요)
+
+*주의*: 레벨 15 (6×6, 예산 9+)는 TIMEOUT 발생. 현재 solver로 검증 불가.
+
+---
+
+### `budget-scan.js` — 예산별 통과율 스캔
+레벨을 예산 범위별로 돌려서 "예산 N이면 통과율 몇 %인지" 파악.
+
+```bash
+node budget-scan.js
+node budget-scan2.js
+```
+
+*언제 사용*: 레벨의 적정 예산(min값)을 찾을 때. 특히 통과율 목표(예: 40~60%)에 맞는 예산 탐색 시.
+
+*결과 파일*: `result_budget8.log`, `result_budget9.log` 참고
+
+---
+
+### `seed-validator.js` — 시드 선별기
+레벨에 쓸 검증된 시드(확산 경로)를 자동으로 골라준다.
+
+```bash
+# 레벨 13, 후보 200개 중 5개 선별, 제한 30초
+node seed-validator.js 13 --candidates 200 --target 5 --time 30
+
+# 기본 실행
+node seed-validator.js [레벨번호]
+```
+
+*언제 사용*: 레벨 확정 후 `schedule`에 쓸 시드 배열을 채울 때.
+
+---
+
+### `find-new-levels.js` — 신규 레벨 후보 탐색
+조건에 맞는 새 레벨 구조를 자동으로 탐색한다.
+
+```bash
+node find-new-levels.js
+```
+
+*언제 사용*: 기획 에이전트가 새 레벨을 제안할 때 수동 설계 대신 자동 탐색.
+
+---
+
+### `find-lv14h.js` / `find14.js` — 레벨 14 근처 후보 탐색
+레벨 14 난이도 대역(5×5, combat, 변근접)의 후보 레벨 탐색.
+
+```bash
+node find-lv14h.js
+node find14.js
+```
+
+---
+
+### `find15.js` / `find-more.js` — 레벨 15 후보 탐색
+레벨 15 대역(6×6, combat, 피날레)의 후보 레벨 탐색.
+
+```bash
+node find15.js
+node find-more.js
+```
+
+*현재 상태*: 레벨 15 구조 자체가 solver TIMEOUT이라 이 도구로 대안 탐색 중.
+
+---
+
+### `budget-test.js` — 예산 테스트 유틸
+특정 조건에서 예산 범위를 빠르게 테스트하는 보조 도구.
+
+```bash
+node budget-test.js
+```
+
+---
+
+## 레벨랩-v2.html — GUI 레벨 설계 도구
+브라우저에서 직접 레벨을 그리고 solver를 실행할 수 있는 GUI.
+- 에이전트가 직접 실행은 불가 → 사람이 브라우저에서 사용
+- 결과를 에이전트에게 붙여넣어 주면 분석 가능
+
+---
+
+## 업데이트 규칙
+새 도구 파일이 추가되면 코드 에이전트가 이 파일을 업데이트한다.
