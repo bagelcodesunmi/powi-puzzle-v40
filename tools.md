@@ -16,8 +16,8 @@
 | 레벨 15 후보 탐색 | `find15.js` / `find-more.js` |
 | 특정 레벨에 쓸 시드 선별 | `seed-validator.js` |
 | 레벨 설계 GUI | `level-lab-v2.html` (브라우저) |
-| 감정곡선 시각화 | `레벨-감정곡선.html` (브라우저) |
-| 게임 플레이 | `포위퍼즐-v40.html` / `포위퍼즐-v41.html` (브라우저) |
+| Edge wall 실험 플레이 | `powi-puzzle-v43-edge-test.html` (브라우저) |
+| Edge wall 실험 설계/검증 | `level-lab-v4.html` (브라우저) |
 
 ---
 
@@ -123,12 +123,22 @@ node budget-test.js
 
 ---
 
-## level-lab-v2.html — GUI 레벨 설계 도구
+## level-lab-v2.html / level-lab-v3.html / level-lab-v4.html — GUI 레벨 설계 도구
 브라우저에서 직접 레벨을 그리고 solver를 실행할 수 있는 GUI.
+- `level-lab-v2.html`: 기존 기준 설계 도구
+- `level-lab-v3.html`: v42 초반 튜토리얼 실험용
+- `level-lab-v4.html`: v43 edge wall 실험용 (도움말/가이드 반영, 편집 기능은 단계적 확장 예정)
 - 에이전트가 직접 실행은 불가 → 사람이 브라우저에서 사용
 - 결과를 에이전트에게 붙여넣어 주면 분석 가능
 
----
+## powi-puzzle-v43-edge-test.html — edge wall 실험 플레이 파일
+- 기존 baseline 흐름과 분리된 edge wall 전용 실험 파일
+- 벽 실험은 이 파일에서만 수행한다
+- baseline 템포/체감을 검증할 때는 `powi-puzzle-v43.html`를 사용한다
+
+## change-checklist.md — 변경 전 확인 템플릿
+- 기믹/규칙/턴 템포/레벨 구조를 바꾸기 전에 먼저 채운다
+- 용어 정의, 기준선, 변경 축, 완료 기준을 작업 전에 확정하기 위한 문서
 
 ## 업데이트 규칙
 새 도구 파일이 추가되면 코드 에이전트가 이 파일을 업데이트한다.
