@@ -68,7 +68,7 @@ const LEVELS = [
   // seeds: validator로 검증된 시드 (이 경로에서 min 예산으로 클리어 가능 확인됨)
   { board: 3, enemies: [[1,1]], rightWalls: [[0,1],[1,1]], downWalls: [[1,0]], schedule: [1], spread: true, combat: false, min: 1, exactBudget: true, seeds: [100001] }, // 1 edge wall 튜토리얼: 아래 1면만 열고 막기
   { board: 3, enemies: [[1,0]], rightWalls: [[1,0]],                 schedule: [1,1,1], spread: true, combat: false, min: 3, exactBudget: true, seeds: [200001] }, // 2 edge wall 반응 실험
-  { board: 4, enemies: [[1,2]], rightWalls: [[0,2]], downWalls: [[1,1]], schedule: [1,1,1,1,1,1], spread: true, combat: false, min: 6, exactBudget: true, seeds: [300001,300002,300003] }, // 3 4x4 edge wall 힌트 실험
+  { board: 4, enemies: [[1,2]], rightWalls: [[0,2]], downWalls: [[1,1]], schedule: [1,1,1], spread: true, combat: false, min: 3, exactBudget: true, seeds: [300001,300002,300003] }, // 3 4x4 edge wall 힌트 실험
   { board: 4, enemies: [[1,1]], rightWalls: [[0,1],[1,1]], downWalls: [[1,0]], schedule: [1,1,1,1], spread: true, combat: false, min: 4, exactBudget: true, seeds: [400001,400002,400003] }, // 4 벽 읽기 확장: 4x4에서 한 면 봉인 완성
   { board: 4, enemies: [[1,1],[2,2]], rightWalls: [[0,1],[1,1],[2,2]], downWalls: [[1,0],[2,1]], schedule: [1,1,1,1,1], spread: true, combat: false, min: 5, exactBudget: true, seeds: [500001,500002,500003] }, // 5 벽 구조 응용: 두 적의 열린 면 읽기
   { board: 5, enemies: [[1,1]],       schedule: [1,1,1,1,1,1,1,1,1], spread: true, combat: false, min: 9, exactBudget: true, seeds: [600001,600002,600003,600004,600005] }, // 6 5×5 내부 — 예산 8→9 (낙차 40%p 해소)
