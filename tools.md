@@ -1,7 +1,11 @@
 # 포위퍼즐 도구 레퍼런스
 
 > 에이전트는 작업 전 이 파일을 참조해 올바른 도구를 선택한다.
-> 마지막 업데이트: 2026-07-14
+> 마지막 업데이트: 2026-07-18
+> ⚠️ 구버전 도구·일회성 탐색 스크립트(budget-scan*, budget-test, find-*, level-lab-v2/v3)는
+>   전부 `폐기/`로 이동했다. 아래 상세 설명 중 해당 파일은 `폐기/` 경로 기준으로 읽을 것.
+> ⚠️ 현행 도구 중 edge wall(rightWalls/downWalls)을 지원하는 것은 아직 없다 —
+>   edge wall 레벨 검증 절차는 `v43-edge-wall-guide.md` §14 체크리스트를 따른다.
 
 ---
 
@@ -9,15 +13,12 @@
 
 | 목적 | 사용할 도구 |
 |------|------------|
-| 특정 레벨 클리어 가능 여부 확인 | `solver-v40.js` |
-| 레벨 15처럼 어려운 레벨 예산 탐색 | `budget-scan.js` |
-| 새 레벨 후보 자동 생성 | `find-new-levels.js` |
-| 레벨 14 근처 후보 탐색 | `find-lv14h.js` / `find14.js` |
-| 레벨 15 후보 탐색 | `find15.js` / `find-more.js` |
-| 특정 레벨에 쓸 시드 선별 | `seed-validator.js` |
-| 레벨 설계 GUI | `level-lab-v2.html` (브라우저) |
+| 특정 레벨 클리어 가능 여부 확인 (edge wall 없는 레벨) | `solver-v40.js` |
+| 특정 레벨에 쓸 시드 선별 (edge wall 없는 레벨) | `seed-validator.js` |
+| 레벨 설계 GUI | `level-lab-v4.html` (브라우저, edge wall 미지원) |
 | Edge wall 실험 플레이 | `powi-puzzle-v43-edge-test.html` (브라우저) |
-| Edge wall 실험 설계/검증 | `level-lab-v4.html` (브라우저) |
+| Edge wall 레벨 검증 | `v43-edge-wall-guide.md` §14 체크리스트 (전용 툴 없음) |
+| 구버전 예산 스캔·레벨 탐색 | `폐기/` 폴더 참조 (budget-scan*, find-*) |
 
 ---
 
