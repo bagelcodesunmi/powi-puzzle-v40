@@ -66,7 +66,7 @@ const LEVELS = [
   { board: 3, enemies: [[1,1]], rightWalls: [[0,1],[1,1]], downWalls: [[1,0]], schedule: [1], spread: true, combat: false, min: 1, exactBudget: true, seeds: [100001] }, // 1 edge wall 튜토리얼: 아래 1면만 열고 막기
   { board: 3, enemies: [[1,0]], rightWalls: [[1,0]],                 schedule: [1,1], spread: true, combat: false, min: 2, exactBudget: true, seeds: [200001] }, // 2 edge wall 반응 실험
   { board: 4, enemies: [[1,2]], rightWalls: [[0,2]], downWalls: [[1,1]], schedule: [1,1,1], spread: true, combat: false, min: 3, exactBudget: true, seeds: [300001,300002,300003] }, // 3 4x4 edge wall 힌트: 적 (1,2) 왼면+윗면 벽 주머니 — 최악=최선=3턴 검증
-  { board: 4, enemies: [[1,0]], rightWalls: [[1,1]], mirror: false, schedule: [1,1,1,1], spread: true, combat: false, min: 4, exactBudget: true, seeds: [400001,400002,400003] }, // 4 4x4 진입: 윗변 적 1기 + 아래 통로벽 — 솔버 min 4 확정 · 예고봇 82% · 초보봇(아래두기) 100%
+  { board: 4, enemies: [[0,0],[2,0]], rightWalls: [[2,0]], downWalls: [[0,0]], mirror: false, schedule: [1,1,1,1], spread: true, combat: false, min: 4, exactBudget: true, seeds: [400001,400002,400003] }, // 4 첫 2기: 윗줄 한 칸 간격 + 통로벽 — 솔버 min 4 확정 · 예산 3 불가 · 예고봇 100% · 초보봇(아래두기) 100%
 ];
 
 // v43 edge wall scaffold fields: rightWalls, downWalls

@@ -768,9 +768,9 @@ const PRESETS = [
   { name: '게임 L1', board: 3, combat: false, hp: 1, mirror: true, enemies: [{ x: 1, y: 1 }], walls: [], rightWalls: [{ x: 0, y: 1 }, { x: 1, y: 1 }], downWalls: [{ x: 1, y: 0 }] },
   { name: '게임 L2', board: 3, combat: false, hp: 1, mirror: true, enemies: [{ x: 1, y: 0 }], walls: [], rightWalls: [{ x: 1, y: 0 }], downWalls: [] },
   { name: '게임 L3', board: 4, combat: false, hp: 1, mirror: true, enemies: [{ x: 1, y: 2 }], walls: [], rightWalls: [{ x: 0, y: 2 }], downWalls: [{ x: 1, y: 1 }] },
-  { name: '게임 L4', board: 4, combat: false, hp: 1, mirror: false, enemies: [{ x: 1, y: 0 }], walls: [], rightWalls: [{ x: 1, y: 1 }], downWalls: [] },
+  { name: '게임 L4', board: 4, combat: false, hp: 1, mirror: false, enemies: [{ x: 0, y: 0 }, { x: 2, y: 0 }], walls: [], rightWalls: [{ x: 2, y: 0 }], downWalls: [{ x: 0, y: 0 }] },
 ];
-const PRESET_VER = 4;              // 프리셋 추가/변경 시 +1 — 기존 사용자에게도 새 프리셋이 1회 주입된다
+const PRESET_VER = 5;              // 프리셋 추가/변경 시 +1 — 기존 사용자에게도 새 프리셋이 1회 주입된다
 let presetVer = 0;
 function seedPresets() {
   // 버전 올라가면 프리셋(게임 레벨 사본)을 최신 데이터로 갱신 — 이름 일치 항목은 덮어쓰고, 없으면 맨 앞에 추가.
