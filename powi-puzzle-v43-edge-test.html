@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>포위 퍼즐 통합 빌드 v43 (edge wall 실험)</title>
+<title>포위 퍼즐 통합 빌드 v43-edge-test (edge wall 실험)</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body { height:100%; overflow:hidden; background:#1b1b1f; touch-action:none; }
@@ -42,7 +42,7 @@
   </div>
 
 <script>
-// ═════ 포위 퍼즐 v43 — edge wall 실험 스캐폴드 ═════
+// ═════ 포위 퍼즐 v43-edge-test — edge wall 전용 실험 ═════
 // 배치: 빈칸 어디든 탭 1회 = 돌 1개(내구도 2). 1:1 고정 턴 (내 배치 1 ↔ 적 턴 1).
 // 포획: 적 영역의 빈칸이 0(완전 밀폐)이 되면, 영역에 인접한 각 벽이 화살 1발씩 발사.
 //       벽은 자기와 붙은 적을 최대 매칭으로 조준 — 벽당 1킬.
@@ -66,9 +66,9 @@ const LEVELS = [
   //   1,9번(튜토리얼) = 1개, 2번 = 1개, 3~8/10~12번(연습·중반) = 3개, 13~15번(후반) = 5개.
   //   ⚠️ 아래 시드는 placeholder — seed-validator.js로 검증 후 교체 예정.
   // seeds: validator로 검증된 시드 (이 경로에서 min 예산으로 클리어 가능 확인됨)
-  { board: 3, enemies: [[0,0]], walls: [[1,0,1],[1,1,1]], schedule: [1],     spread: true, combat: false, min: 1, exactBudget: true, seeds: [100001] }, // 1 오프닝: 1탭 포획
-  { board: 3, enemies: [[0,0]],                           schedule: [1,1,1], spread: true, combat: false, min: 3, exactBudget: true, seeds: [200001] }, // 2 추격 봉인
-  { board: 4, enemies: [[1,2]],                           schedule: [1,1,1,1,1,1],         spread: true, combat: false, min: 6, exactBudget: true, seeds: [300001,300002,300003] }, // 3 4×4 진입
+  { board: 3, enemies: [[0,0]], rightWalls: [[0,0]],                 schedule: [1],     spread: true, combat: false, min: 1, exactBudget: true, seeds: [100001] }, // 1 edge wall 튜토리얼: 마지막 1면 닫기
+  { board: 3, enemies: [[1,0]], rightWalls: [[1,0]],                 schedule: [1,1,1], spread: true, combat: false, min: 3, exactBudget: true, seeds: [200001] }, // 2 edge wall 반응 실험
+  { board: 4, enemies: [[1,2]], rightWalls: [[0,2]], downWalls: [[1,1]], schedule: [1,1,1,1,1,1], spread: true, combat: false, min: 6, exactBudget: true, seeds: [300001,300002,300003] }, // 3 4x4 edge wall 힌트 실험
   { board: 4, enemies: [[0,0],[3,3]], schedule: [1,1,1,1,1,1,1],       spread: true, combat: false, min: 7, exactBudget: true, seeds: [400001,400002,400003] }, // 4 양면 코너쌍 — v37 min=7 확정
   { board: 4, enemies: [[1,1],[2,3]], schedule: [1,1,1,1,1,1,1],       spread: true, combat: false, min: 7, exactBudget: true, seeds: [500001,500002,500003] }, // 5 좁은 방 2기 — v37 min=7 확정
   { board: 5, enemies: [[1,1]],       schedule: [1,1,1,1,1,1,1,1,1], spread: true, combat: false, min: 9, exactBudget: true, seeds: [600001,600002,600003,600004,600005] }, // 6 5×5 내부 — 예산 8→9 (낙차 40%p 해소)
