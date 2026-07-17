@@ -6,7 +6,7 @@
       "board": 3,
       "combat": false,
       "hp": 1,
-      "savedAt": 1784309142694,
+      "savedAt": 1784312991957,
       "enemies": [
         {
           "x": 1,
@@ -30,14 +30,14 @@
           "y": 0
         }
       ],
-      "mirror": false
+      "mirror": true
     },
     {
       "name": "게임 L2",
       "board": 3,
       "combat": false,
       "hp": 1,
-      "savedAt": 1784309151496,
+      "savedAt": 1784312991957,
       "enemies": [
         {
           "x": 1,
@@ -52,14 +52,14 @@
         }
       ],
       "downWalls": [],
-      "mirror": false
+      "mirror": true
     },
     {
       "name": "게임 L3",
       "board": 4,
       "combat": false,
       "hp": 1,
-      "savedAt": 1784309164474,
+      "savedAt": 1784312991957,
       "enemies": [
         {
           "x": 1,
@@ -79,7 +79,7 @@
           "y": 1
         }
       ],
-      "mirror": false
+      "mirror": true
     },
     {
       "name": "게임 L4",
@@ -89,11 +89,11 @@
       "mirror": false,
       "enemies": [
         {
-          "x": 2,
+          "x": 0,
           "y": 0
         },
         {
-          "x": 1,
+          "x": 2,
           "y": 0
         }
       ],
@@ -102,18 +102,15 @@
         {
           "x": 2,
           "y": 0
-        },
+        }
+      ],
+      "downWalls": [
         {
           "x": 0,
           "y": 0
-        },
-        {
-          "x": 2,
-          "y": 1
         }
       ],
-      "downWalls": [],
-      "savedAt": 1784311252038
+      "savedAt": 1784313333189
     }
   ]
 }
