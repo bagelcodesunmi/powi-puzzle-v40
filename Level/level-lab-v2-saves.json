@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "saves": [
     {
       "name": "게임 L1",
@@ -31,6 +31,16 @@
           "y": 0
         }
       ],
+      "schedule": [
+        1
+      ],
+      "spread": true,
+      "min": 1,
+      "exactBudget": true,
+      "seeds": [
+        100001
+      ],
+      "note": "1 edge wall 튜토리얼: 아래 1면만 열고 막기",
       "savedAt": 1784313600000
     },
     {
@@ -54,6 +64,17 @@
         }
       ],
       "downWalls": [],
+      "schedule": [
+        1,
+        1
+      ],
+      "spread": true,
+      "min": 2,
+      "exactBudget": true,
+      "seeds": [
+        200001
+      ],
+      "note": "2 edge wall 반응 실험",
       "savedAt": 1784313600000
     },
     {
@@ -82,6 +103,20 @@
           "y": 1
         }
       ],
+      "schedule": [
+        1,
+        1,
+        1
+      ],
+      "spread": true,
+      "min": 3,
+      "exactBudget": true,
+      "seeds": [
+        300001,
+        300002,
+        300003
+      ],
+      "note": "3 4x4 edge wall 힌트: 적 (1,2) 왼면+윗면 벽 주머니 — 최악=최선=3턴 검증",
       "savedAt": 1784313600000
     },
     {
@@ -114,6 +149,21 @@
           "y": 0
         }
       ],
+      "schedule": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "spread": true,
+      "min": 4,
+      "exactBudget": true,
+      "seeds": [
+        400001,
+        400002,
+        400003
+      ],
+      "note": "4 첫 2기: 윗줄 한 칸 간격 + 통로벽 — 솔버 min 4 확정 · 예산 3 불가 · 예고봇 100% · 초보봇(아래두기) 100%",
       "savedAt": 1784313600000
     }
   ]

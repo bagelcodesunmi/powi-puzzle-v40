@@ -60,11 +60,9 @@
 //              → v33 전투 매칭·화살 대칭화 → v34 포획 총격전 → v35 매 턴 공격 폐지 → v36 내구도 2·좌상단 발사·반격 밀폐 한정·레벨 재편 → v37 유예 판정 → v39 손상 표현 제거 → v40 전면 내구도 1 (반격 1발 = 벽 파괴) + 14 단일 적 교체.
 // ─── 삭제된 시스템: 머지, 영토(자동 벽·틴트·배치 금지), 열매·아이템, 별점.
 const LEVELS = [
-  // ═══ v43 edge wall 실험: 튜토리얼 1~3레벨만 유지 (4번 이후 구 레벨은 전부 삭제 — 재설계 예정) ═══
-  // seeds: 클리어/재시도마다 이 배열에서 하나를 선택한다.
-  //   ⚠️ 아래 시드는 placeholder — seed-validator.js가 edge wall 미지원이라 아직 미검증.
+  // ▼ AUTO-GENERATED — Level/level-lab-v2-saves.json 에서 생성됨. 직접 편집 금지. 재생성: node sync-levels.js
   { board: 3, enemies: [[1,1]], rightWalls: [[0,1],[1,1]], downWalls: [[1,0]], schedule: [1], spread: true, combat: false, min: 1, exactBudget: true, seeds: [100001] }, // 1 edge wall 튜토리얼: 아래 1면만 열고 막기
-  { board: 3, enemies: [[1,0]], rightWalls: [[1,0]],                 schedule: [1,1], spread: true, combat: false, min: 2, exactBudget: true, seeds: [200001] }, // 2 edge wall 반응 실험
+  { board: 3, enemies: [[1,0]], rightWalls: [[1,0]], schedule: [1,1], spread: true, combat: false, min: 2, exactBudget: true, seeds: [200001] }, // 2 edge wall 반응 실험
   { board: 4, enemies: [[1,2]], rightWalls: [[0,2]], downWalls: [[1,1]], schedule: [1,1,1], spread: true, combat: false, min: 3, exactBudget: true, seeds: [300001,300002,300003] }, // 3 4x4 edge wall 힌트: 적 (1,2) 왼면+윗면 벽 주머니 — 최악=최선=3턴 검증
   { board: 4, enemies: [[0,0],[2,0]], rightWalls: [[2,0]], downWalls: [[0,0]], mirror: false, schedule: [1,1,1,1], spread: true, combat: false, min: 4, exactBudget: true, seeds: [400001,400002,400003] }, // 4 첫 2기: 윗줄 한 칸 간격 + 통로벽 — 솔버 min 4 확정 · 예산 3 불가 · 예고봇 100% · 초보봇(아래두기) 100%
 ];

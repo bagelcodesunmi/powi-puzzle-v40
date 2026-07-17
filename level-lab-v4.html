@@ -793,12 +793,13 @@ const msg = t => { saveMsg.textContent = t; };
 // 게임(powi-puzzle-v43-edge-test.html) 현재 레벨 1~3 프리셋 — 불러와서 확인하거나 일괄 검토(난이도 곡선)에 사용.
 // 최초 1회만 저장 목록에 추가된다 (지우면 다시 생기지 않음). 게임 레벨 데이터가 바뀌면 여기도 갱신할 것.
 const PRESETS = [
+  // ▼ AUTO-GENERATED — Level/level-lab-v2-saves.json 에서 생성됨. 직접 편집 금지. 재생성: node sync-levels.js
   { name: '게임 L1', board: 3, combat: false, hp: 1, mirror: true, enemies: [{ x: 1, y: 1 }], walls: [], rightWalls: [{ x: 0, y: 1 }, { x: 1, y: 1 }], downWalls: [{ x: 1, y: 0 }] },
   { name: '게임 L2', board: 3, combat: false, hp: 1, mirror: true, enemies: [{ x: 1, y: 0 }], walls: [], rightWalls: [{ x: 1, y: 0 }], downWalls: [] },
   { name: '게임 L3', board: 4, combat: false, hp: 1, mirror: true, enemies: [{ x: 1, y: 2 }], walls: [], rightWalls: [{ x: 0, y: 2 }], downWalls: [{ x: 1, y: 1 }] },
   { name: '게임 L4', board: 4, combat: false, hp: 1, mirror: false, enemies: [{ x: 0, y: 0 }, { x: 2, y: 0 }], walls: [], rightWalls: [{ x: 2, y: 0 }], downWalls: [{ x: 0, y: 0 }] },
 ];
-const PRESET_VER = 5;              // 프리셋 추가/변경 시 +1 — 기존 사용자에게도 새 프리셋이 1회 주입된다
+const PRESET_VER = 6;              // 프리셋 추가/변경 시 +1 — 기존 사용자에게도 새 프리셋이 1회 주입된다
 let presetVer = 0;
 function seedPresets() {
   // 버전 올라가면 프리셋(게임 레벨 사본)을 최신 데이터로 갱신 — 이름 일치 항목은 덮어쓰고, 없으면 맨 앞에 추가.
