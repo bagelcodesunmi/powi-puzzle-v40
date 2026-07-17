@@ -66,6 +66,7 @@ const LEVELS = [
   { board: 3, enemies: [[1,1]], rightWalls: [[0,1],[1,1]], downWalls: [[1,0]], schedule: [1], spread: true, combat: false, min: 1, exactBudget: true, seeds: [100001] }, // 1 edge wall 튜토리얼: 아래 1면만 열고 막기
   { board: 3, enemies: [[1,0]], rightWalls: [[1,0]],                 schedule: [1,1], spread: true, combat: false, min: 2, exactBudget: true, seeds: [200001] }, // 2 edge wall 반응 실험
   { board: 4, enemies: [[1,2]], rightWalls: [[0,2]], downWalls: [[1,1]], schedule: [1,1,1], spread: true, combat: false, min: 3, exactBudget: true, seeds: [300001,300002,300003] }, // 3 4x4 edge wall 힌트: 적 (1,2) 왼면+윗면 벽 주머니 — 최악=최선=3턴 검증
+  { board: 4, enemies: [[0,0],[1,0]], rightWalls: [[2,0]], downWalls: [[0,0]], mirror: false, schedule: [1,1,1,1], spread: true, combat: false, min: 4, exactBudget: true, seeds: [400001,400002,400003] }, // 4 첫 2기: 윗줄 쌍 + 통로벽 — 솔버 min 4 확정 · 예산 3 불가 · 예고봇 100%
 ];
 
 // v43 edge wall scaffold fields: rightWalls, downWalls
@@ -177,8 +178,11 @@ function loadLevel(i, { reuse = false } = {}) {
   nextSpread = null;
   if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
 
-  const fx = prng() < .5;
-  const fy = prng() < .5;
+  // mirror: false 레벨은 미러링 없이 항상 원좌표 그대로 (튜토리얼 고정 방향용).
+  // 미러링을 끄면 fx/fy용 prng 2회 소비도 건너뛴다 — 시드 검증 시 툴과 소비 순서가 같아야 함.
+  const doMirror = level.mirror !== false;
+  const fx = doMirror && prng() < .5;
+  const fy = doMirror && prng() < .5;
   for (const [x, y] of level.enemies) {
     grid[idx(fx ? N - 1 - x : x, fy ? N - 1 - y : y)] = ENEMY;
   }
