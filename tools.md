@@ -9,6 +9,12 @@
 >   `solver-v40.js`/`seed-validator.js`는 여전히 edge wall 미지원.
 >   edge wall 레벨 검증 절차는 `v43-edge-wall-guide.md` §14 체크리스트를 따른다.
 
+## 레벨 데이터 단일 소스 원칙 (2026-07-18 확정)
+- **레벨 데이터의 유일한 진실은 게임 파일 `powi-puzzle-v43-edge-test.html`의 `LEVELS`다.**
+- `level-lab-v4.html`의 `PRESETS`(게임 L1~L4)는 그 사본(미러)이며, 게임 레벨을 바꿀 때 함께 갱신한다 (`PRESET_VER`도 +1).
+- 워크플로우: **툴에서 편집 → 게임 파일에 반영 → 프리셋 동기화**. 정방향만 쓴다.
+- 별도 저장 파일(`Level/level-lab-v2-saves.json` 등)은 두지 않는다 — 툴은 그런 파일을 자동으로 읽지 않으며(localStorage + PRESETS만 사용), 중복 소스는 드리프트·혼란의 원인이 된다. 임시 백업이 필요하면 툴의 "파일로 내보내기"로 그때만 만든다.
+
 ---
 
 ## 도구 선택 가이드
