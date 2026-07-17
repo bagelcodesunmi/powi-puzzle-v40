@@ -19,7 +19,7 @@
   - 예: `node solver-v40.js 12,13 --budget 4`
 - `budget-scan.js` / `budget-scan2.js` — 예산(난이도) 범위 스캔
 - `find-lv14h.js`, `find-new-levels.js` 등 — 신규 레벨 탐색 도구
-- `레벨랩-v2.html` — 레벨 설계 & 검증 GUI 도구
+- `level-lab-v2.html` — 레벨 설계 & 검증 GUI 도구
 - `레벨-감정곡선.html` — 레벨 난이도 감정곡선 시각화
 
 ## 현재 방향 (승인된 결정)

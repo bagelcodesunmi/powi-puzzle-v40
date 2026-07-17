@@ -15,7 +15,7 @@
 | 레벨 14 근처 후보 탐색 | `find-lv14h.js` / `find14.js` |
 | 레벨 15 후보 탐색 | `find15.js` / `find-more.js` |
 | 특정 레벨에 쓸 시드 선별 | `seed-validator.js` |
-| 레벨 설계 GUI | `레벨랩-v2.html` (브라우저) |
+| 레벨 설계 GUI | `level-lab-v2.html` (브라우저) |
 | 감정곡선 시각화 | `레벨-감정곡선.html` (브라우저) |
 | 게임 플레이 | `포위퍼즐-v40.html` / `포위퍼즐-v41.html` (브라우저) |
 
@@ -123,7 +123,7 @@ node budget-test.js
 
 ---
 
-## 레벨랩-v2.html — GUI 레벨 설계 도구
+## level-lab-v2.html — GUI 레벨 설계 도구
 브라우저에서 직접 레벨을 그리고 solver를 실행할 수 있는 GUI.
 - 에이전트가 직접 실행은 불가 → 사람이 브라우저에서 사용
 - 결과를 에이전트에게 붙여넣어 주면 분석 가능
