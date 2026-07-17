@@ -103,8 +103,8 @@
   #batchResult.show { display: block; }
   .bRow { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; }
   .bName { flex: 0 0 36%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .bBarWrap { flex: 1; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
-  .bBarWrap i { display: block; height: 100%; background: var(--enemy); border-radius: 4px; }
+  .bBarWrap { flex: 1; display: flex; gap: 3px; align-items: center; }
+  .bBarWrap i { display: block; width: 13px; height: 9px; background: var(--enemy); border-radius: 2px; }
   .bVal { flex: 0 0 auto; font-size: 12px; color: var(--dim); }
   .bBad { color: var(--warn); font-size: 12px; }
 </style>
@@ -1038,15 +1038,14 @@ document.getElementById('batchBtn').onclick = async () => {
 function renderBatch(rows) {
   const R = document.getElementById('batchResult');
   if (!rows.length) return;
-  const maxMin = Math.max(...rows.map(r => r.budget || 0), 1);
   R.innerHTML = '<div class="rTitle">일괄 검토 — 난이도 곡선 (min 턴)</div>' + rows.map((r, i) => {
     if (r.fail) return `<div class="bRow"><span class="bName">${i + 1}. ${esc(r.name)}</span><span class="bBad">✕ ${esc(r.fail)}</span></div>`;
-    const w = (r.budget / maxMin * 100).toFixed(0);
+    const blocks = '<i></i>'.repeat(r.budget);
     return `<div class="bRow"><span class="bName">${i + 1}. ${esc(r.name)}</span>` +
-           `<span class="bBarWrap"><i style="width:${w}%"></i></span>` +
+           `<span class="bBarWrap">${blocks}</span>` +
            `<span class="bVal">${r.budget}턴${r.certain ? '' : '⚠️'} · ${(r.wr * 100).toFixed(0)}%</span></div>`;
   }).join('') +
-  '<div class="note">막대: min 턴 (목록 내 최대값 대비 상대 길이 — 계단식으로 길어지면 난이도 곡선이 단조 상승). ⚠️는 6×6 잠정값 · % = 예고 읽는 봇 승률 (min 예산, 낮을수록 정밀한 수읽기 요구). 저장 순서대로 확인하세요.</div>';
+  '<div class="note">■ 1칸 = 1턴 (min 예산) — 아래로 갈수록 블록이 하나씩 늘면 이상적인 계단. ⚠️는 6×6 잠정값 · % = 예고 읽는 봇 승률 (100% = 예고만 따라가면 클리어, 낮을수록 깊은 수읽기 요구).</div>';
   R.classList.add('show');
 }
 
