@@ -166,6 +166,14 @@
   <div id="boardWrap"><div id="board"></div></div>
   <div class="hint">⚠️ 확산형 2기 이상은 내구도 1에서 발산(클리어 불가)이 검증돼 있습니다 — 2기는 내구도 2로 검토하세요</div>
 
+  <div class="row">
+    <div class="seg" id="budgetSeg">
+      <button data-b="auto" class="on">예산 자동(솔버 min)</button><button data-b="manual">예산 직접</button>
+    </div>
+    <input type="number" id="budgetInput" min="1" max="20" value="4" style="display:none; width:64px; background:var(--ink); color:var(--stone); border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:13px;">
+  </div>
+  <div class="hint" id="budgetHint" style="display:none">예산(주는 돌 수)을 직접 지정해 그 예산에서의 승률을 잽니다. 솔버가 구한 진짜 min은 참고로 함께 표시됩니다.</div>
+
   <div class="actions">
     <button class="btn primary" id="runBtn">검토</button>
     <button class="btn ghost" id="stopBtn" disabled>중지</button>
@@ -613,19 +621,28 @@ self.onmessage = e => {
   }
 
   try {
+    // userBudget(선택): 예산을 직접 지정하면 그 예산에서 승률을 잰다. 진짜 min은 솔버로 계속 산출해 참고 표시.
+    const ub = e.data.userBudget || null;
     if (cfg.board <= 5) {
       P('솔버: 최악 확산 전수 탐색 중… (5×5는 1~3분 걸릴 수 있습니다)');
-      const r = solveMin(cfg, cap, (n, k) => P('솔버 탐색 중… ' + (k ? '예산 ' + k + ' · ' : '') + (n / 1000 | 0) + 'k 상태'));
-      if (r.min === null) { self.postMessage({ type: 'done', fail: '예산 ' + cap + ' 이내 클리어 불가 (발산 가능성 — 2기 확산+내구도 1 조합인지 확인)' }); return; }
-      P('최소 턴 ' + r.min + ' 확정 — 봇 승률 측정 시작');
-      const mc = mcStats(cfg, r.min, runs, mcP('예고봇 측정'));
-      self.postMessage({ type: 'done', solver: r, mc, budget: r.min, certain: true });
+      const solverCap = Math.max(cap, ub || 0);
+      const r = solveMin(cfg, solverCap, (n, k) => P('솔버 탐색 중… ' + (k ? '예산 ' + k + ' · ' : '') + (n / 1000 | 0) + 'k 상태'));
+      const usedBudget = ub || r.min;
+      if (usedBudget === null) { self.postMessage({ type: 'done', fail: '예산 ' + solverCap + ' 이내 클리어 불가 (발산 가능성 — 2기 확산+내구도 1 조합인지 확인)' }); return; }
+      P((ub ? '지정 예산 ' + ub : '최소 턴 ' + r.min + ' 확정') + ' — 봇 승률 측정 시작');
+      const mc = mcStats(cfg, usedBudget, runs, mcP('예고봇 측정'));
+      self.postMessage({ type: 'done', solver: r, mc, budget: usedBudget, trueMin: r.min, manual: !!ub, certain: true });
     } else {
+      if (ub) {
+        const mc = mcStats(cfg, ub, runs, mcP('예고봇(지정 예산 ' + ub + ')'));
+        self.postMessage({ type: 'done', mc, budget: ub, trueMin: null, manual: true, certain: false });
+        return;
+      }
       let scan = mcStats(cfg, 12, runs, mcP('봇 탐색(예산12)'));
       if (!scan.wins) scan = mcStats(cfg, 14, runs, mcP('봇 재탐색(예산14)'));
       if (!scan.wins) { self.postMessage({ type: 'done', fail: '봇 기준 승리 사례 없음 (예산 14) — 발산 가능성' }); return; }
       const mc = mcStats(cfg, scan.p10, runs, mcP('예고봇(잠정 min ' + scan.p10 + ')'));
-      self.postMessage({ type: 'done', mc, budget: scan.p10, certain: false, scan });
+      self.postMessage({ type: 'done', mc, budget: scan.p10, trueMin: null, manual: false, certain: false, scan });
     }
   } catch (err) { self.postMessage({ type: 'done', fail: '오류: ' + err.message }); }
 };
@@ -634,6 +651,7 @@ self.onmessage = e => {
 <script>
 let N = 4, combat = false, stoneHp = 1;
 let mirror = true;                        // false = mirror: false 레벨 (미러링 없이 항상 원좌표 — 튜토리얼 고정 방향)
+let budgetMode = 'auto';                  // 'auto' = 솔버 min · 'manual' = 사용자가 예산 직접 지정
 let mode = 'enemy', curWallHp = 1;        // 배치 대상: 'enemy' | 'rwall' | 'dwall' | 'wall'
 let enemies = [];      // {x, y}
 let walls = [];        // {x, y, hp} — 칸 점유 돌벽 (구형)
@@ -716,6 +734,14 @@ document.getElementById('mirrorSeg').onclick = e => {
   if (!e.target.dataset.mi) return;
   mirror = e.target.dataset.mi === '1';
   [...e.currentTarget.children].forEach(b => b.classList.toggle('on', b === e.target));
+};
+document.getElementById('budgetSeg').onclick = e => {
+  if (!e.target.dataset.b) return;
+  budgetMode = e.target.dataset.b;
+  [...e.currentTarget.children].forEach(b => b.classList.toggle('on', b === e.target));
+  const show = budgetMode === 'manual';
+  document.getElementById('budgetInput').style.display = show ? '' : 'none';
+  document.getElementById('budgetHint').style.display = show ? '' : 'none';
 };
 document.getElementById('hpSeg').onclick = e => {
   if (!e.target.dataset.p) return;
@@ -982,7 +1008,8 @@ runBtn.onclick = () => {
     prog.textContent = '';
     showResult(cfg, m);
   };
-  worker.postMessage({ cfg, cap: 12, runs: 1000 });
+  const userBudget = budgetMode === 'manual' ? Math.max(1, +document.getElementById('budgetInput').value || 1) : null;
+  worker.postMessage({ cfg, cap: 12, runs: 1000, userBudget });
 };
 stopBtn.onclick = () => {
   batchStop = true;
@@ -1053,7 +1080,7 @@ function renderBatch(rows) {
 }
 
 // 게임 레벨 데이터 한 줄 생성 — 복사 버튼(showResult)과 시드 포함 복사(seedRunBtn)가 공유하는 단일 진실
-function levelLine(cfg, budget, comment, seeds) {
+function levelLine(cfg, budget, comment, seeds, exact = true) {
   const sch = Array(budget).fill(1);
   const wallsStr = cfg.walls ? ` walls: ${JSON.stringify(cfg.walls)},` : '';
   const edgeStr = (cfg.rightWalls ? ` rightWalls: ${JSON.stringify(cfg.rightWalls)},` : '')
@@ -1061,7 +1088,7 @@ function levelLine(cfg, budget, comment, seeds) {
   const hpStr = cfg.hp === 2 ? ' hp: 2,' : '';
   const mirrorStr = cfg.mirror === false ? ' mirror: false,' : '';
   const seedsStr = seeds && seeds.length ? ` seeds: [${seeds.join(',')}],` : '';
-  return `{ board: ${cfg.board}, enemies: ${JSON.stringify(cfg.enemies)},${wallsStr}${edgeStr}${hpStr}${mirrorStr}${seedsStr} schedule: ${JSON.stringify(sch)}, spread: true, combat: ${cfg.combat}, min: ${budget}, exactBudget: true }, // ${comment}`;
+  return `{ board: ${cfg.board}, enemies: ${JSON.stringify(cfg.enemies)},${wallsStr}${edgeStr}${hpStr}${mirrorStr}${seedsStr} schedule: ${JSON.stringify(sch)}, spread: true, combat: ${cfg.combat}, min: ${budget}, exactBudget: ${exact} }, // ${comment}`;
 }
 
 function showResult(cfg, m) {
@@ -1075,18 +1102,37 @@ function showResult(cfg, m) {
   document.getElementById('seedOut').classList.remove('show');
   document.getElementById('seedCopyBtn').style.display = 'none';
   const R = document.getElementById('result');
-  document.getElementById('minOut').innerHTML = m.budget + '<small>최소 턴</small>';
+  const tm = m.trueMin;                      // 솔버가 구한 진짜 min (6×6 등 미확정이면 null)
+  const slack = (m.manual && tm != null) ? m.budget - tm : null;
+  document.getElementById('minOut').innerHTML = m.budget + '<small>' + (m.manual ? '지정 예산' : '최소 턴') + '</small>';
   const badge = document.getElementById('badge');
-  badge.textContent = m.certain ? '솔버 확정' : '잠정 (봇 p10)';
-  badge.className = 'badge ' + (m.certain ? 'sure' : 'tent');
+  if (m.manual) {
+    if (tm == null) { badge.textContent = '지정 예산 (min 미확정)'; badge.className = 'badge tent'; }
+    else if (slack < 0) { badge.textContent = `⚠️ 진짜 min ${tm} 미만`; badge.className = 'badge tent'; }
+    else if (slack === 0) { badge.textContent = `지정 = 진짜 min ${tm}`; badge.className = 'badge sure'; }
+    else { badge.textContent = `슬랙 +${slack} (진짜 min ${tm})`; badge.className = 'badge sure'; }
+  } else {
+    badge.textContent = m.certain ? '솔버 확정' : '잠정 (봇 p10)';
+    badge.className = 'badge ' + (m.certain ? 'sure' : 'tent');
+  }
   document.getElementById('wrOut').textContent = (m.mc.winRate * 100).toFixed(1) + '%';
   document.getElementById('fmOut').textContent = m.mc.median ?? '—';
-  document.getElementById('fmLabel').textContent = m.certain ? '예고봇 중앙값 턴 (min 예산)' : '예고봇 중앙값 턴 (잠정 min)';
-  const line = levelLine(cfg, m.budget, `예고봇 ${(m.mc.winRate * 100).toFixed(1)}% ${m.certain ? '레벨랩 솔버 확정' : '⚠️잠정 — solver-v40으로 확정 필요'}`);
+  document.getElementById('fmLabel').textContent = m.manual ? '예고봇 중앙값 턴 (지정 예산)' : (m.certain ? '예고봇 중앙값 턴 (min 예산)' : '예고봇 중앙값 턴 (잠정 min)');
+  // exactBudget: 지정 예산이 진짜 min과 같을 때만 true (슬랙이 있으면 false)
+  const exact = m.manual ? (tm != null && slack === 0) : m.certain;
+  const comment = m.manual
+    ? `예고봇 ${(m.mc.winRate * 100).toFixed(1)}% · 예산 ${m.budget}${tm != null ? ` (진짜 min ${tm}${slack ? `, 슬랙 ${slack > 0 ? '+' : ''}${slack}` : ''})` : ''}`
+    : `예고봇 ${(m.mc.winRate * 100).toFixed(1)}% ${m.certain ? '레벨랩 솔버 확정' : '⚠️잠정 — solver-v40으로 확정 필요'}`;
+  const line = levelLine(cfg, m.budget, comment, null, exact);
   document.getElementById('lineOut').value = line;
-  document.getElementById('noteOut').textContent = m.certain
-    ? '확정 min: 어떤 확산이 나와도 이 턴 수로 클리어 가능한 수순이 존재합니다 (제로 슬랙 예산). 예고 읽는 봇 = 게임처럼 확산 예고를 보고 한 수 앞을 읽는 그리디 (플레이어 체감 근사). 이 승률이 낮으면 예고만으로는 부족한 수읽기 요구 레벨이라는 신호.'
-    : '⚠️ 잠정 min: 6×6은 브라우저 전수 탐색이 불가능해 봇 1000판 하위 10% 기록입니다. 최악 확산 클리어 미보장 — solver-v40.mjs로 로컬 확정을 권장합니다.';
+  document.getElementById('noteOut').textContent = m.manual
+    ? (slack == null ? '지정 예산 승률입니다. 6×6은 진짜 min 미확정 — solver-v40으로 확정 권장.'
+       : slack < 0 ? `⚠️ 지정 예산이 진짜 min(${tm})보다 작습니다. 최악 확산에서는 클리어 불가 — 승률은 운 좋은 확산만 반영한 값입니다.`
+       : slack === 0 ? `지정 예산이 진짜 min과 같습니다 (제로 슬랙). 승률이 100% 미만이면 정밀 수읽기 요구 레벨.`
+       : `슬랙 +${slack}: 진짜 min(${tm})보다 ${slack}턴 여유. 실수 여유가 생겨 승률이 오릅니다 — 초반 완충 레벨 튜닝용.`)
+    : (m.certain
+      ? '확정 min: 어떤 확산이 나와도 이 턴 수로 클리어 가능한 수순이 존재합니다 (제로 슬랙 예산). 예고 읽는 봇 = 게임처럼 확산 예고를 보고 한 수 앞을 읽는 그리디 (플레이어 체감 근사).'
+      : '⚠️ 잠정 min: 6×6은 브라우저 전수 탐색이 불가능해 봇 1000판 하위 10% 기록입니다. 최악 확산 클리어 미보장 — solver-v40.mjs로 로컬 확정을 권장합니다.');
   R.classList.add('show');
 }
 // ===== 시드 뽑기 =====
