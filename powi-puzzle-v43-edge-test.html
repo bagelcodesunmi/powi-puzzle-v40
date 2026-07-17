@@ -60,30 +60,12 @@
 //              → v33 전투 매칭·화살 대칭화 → v34 포획 총격전 → v35 매 턴 공격 폐지 → v36 내구도 2·좌상단 발사·반격 밀폐 한정·레벨 재편 → v37 유예 판정 → v39 손상 표현 제거 → v40 전면 내구도 1 (반격 1발 = 벽 파괴) + 14 단일 적 교체.
 // ─── 삭제된 시스템: 머지, 영토(자동 벽·틴트·배치 금지), 열매·아이템, 별점.
 const LEVELS = [
-  // ═══ v43 실험: edge wall 규칙 도입 전 스캐폴드. 현재 레벨 데이터는 v42 기준이며, rightWalls/downWalls 적용 전 뼈대 파일이다. ═══
-  // — 1부: 격리 (비전투 8판) — 구 4번(1,1)은 3번(1,2)과 미러링 동일 궤도라 제거. 이하 번호 1씩 당겨짐 —
+  // ═══ v43 edge wall 실험: 튜토리얼 1~3레벨만 유지 (4번 이후 구 레벨은 전부 삭제 — 재설계 예정) ═══
   // seeds: 클리어/재시도마다 이 배열에서 하나를 선택한다.
-  //   1,9번(튜토리얼) = 1개, 2번 = 1개, 3~8/10~12번(연습·중반) = 3개, 13~15번(후반) = 5개.
-  //   ⚠️ 아래 시드는 placeholder — seed-validator.js로 검증 후 교체 예정.
-  // seeds: validator로 검증된 시드 (이 경로에서 min 예산으로 클리어 가능 확인됨)
+  //   ⚠️ 아래 시드는 placeholder — seed-validator.js가 edge wall 미지원이라 아직 미검증.
   { board: 3, enemies: [[1,1]], rightWalls: [[0,1],[1,1]], downWalls: [[1,0]], schedule: [1], spread: true, combat: false, min: 1, exactBudget: true, seeds: [100001] }, // 1 edge wall 튜토리얼: 아래 1면만 열고 막기
   { board: 3, enemies: [[1,0]], rightWalls: [[1,0]],                 schedule: [1,1], spread: true, combat: false, min: 2, exactBudget: true, seeds: [200001] }, // 2 edge wall 반응 실험
-  { board: 4, enemies: [[1,2]], rightWalls: [[0,2]], downWalls: [[1,1]], schedule: [1,1,1], spread: true, combat: false, min: 3, exactBudget: true, seeds: [300001,300002,300003] }, // 3 4x4 edge wall 힌트 실험
-  { board: 4, enemies: [[0,0],[3,0]], rightWalls: [[0,0],[2,0]], downWalls: [], schedule: [1,1,1,1], spread: true, combat: false, min: 4, exactBudget: true, seeds: [400001] }, // 4 빠른 테스트안: 상단 코너 적 2기를 4턴 내 처리
-  { board: 4, enemies: [[1,1],[2,2]], rightWalls: [[0,1],[1,1],[2,2]], downWalls: [[1,0],[2,1]], schedule: [1,1,1,1,1], spread: true, combat: false, min: 5, exactBudget: true, seeds: [500001,500002,500003] }, // 5 벽 구조 응용: 두 적의 열린 면 읽기
-  { board: 5, enemies: [[1,1]],       schedule: [1,1,1,1,1,1,1,1,1], spread: true, combat: false, min: 9, exactBudget: true, seeds: [600001,600002,600003,600004,600005] }, // 6 5×5 내부 — 예산 8→9 (낙차 40%p 해소)
-  { board: 5, enemies: [[2,1]],       schedule: [1,1,1,1,1,1,1,1],     spread: true, combat: false, min: 8, exactBudget: true, seeds: [700001,700002,700003,700007] }, // 7 5×5 변근접 내부
-  { board: 5, enemies: [[2,2]],       schedule: [1,1,1,1,1,1,1,1,1],   spread: true, combat: false, min: 9, exactBudget: true, seeds: [800002,800003,800004] }, // 8 5×5 정중앙
-  // — 2부: 전투 6판 (9번부터 끝까지 서로 공격) — 9 = 1탭 오프닝(벽은 1턴 킬에 필수라 유일하게 프리셋 유지).
-  //   구 변(1,0) 판은 코너와 체감 중복으로 제거 —
-  //   11~16 = 1부와 같은 방식의 맨판 적 배치 + 전투만 추가. 프리셋 벽 사용 구판(2×2 정지·십자·3×3 보스)은 전부 폐기 —
-  { board: 3, enemies: [[0,0]], walls: [[1,0,1]], schedule: [1], spread: true, combat: true, min: 1, exactBudget: true, seeds: [900001] }, // 9 전투 오프닝: 적 1·벽 1 최소 구성, 1탭 전멸 + 반격 1발(벽 파괴 첫 경험) — v40 min=1 확정
-  { board: 3, enemies: [[0,0]],       schedule: [1,1,1],                 spread: true, combat: true, min: 3, exactBudget: true, seeds: [1000001,1000002,1000003] }, // 10 3×3 코너 — v40 min=3 확정
-  { board: 4, enemies: [[0,0]],       schedule: [1,1,1,1],               spread: true, combat: true, min: 4, exactBudget: true, seeds: [1100001,1100002,1100003,1100004] }, // 11 4×4 코너 — v40 min=4 확정
-  { board: 4, enemies: [[1,1]],       schedule: [1,1,1,1,1,1],           spread: true, combat: true, min: 6, exactBudget: true, seeds: [1200001,1200002,1200003,1200004] }, // 12 4×4 내부 — v40 min=6 확정 ※ (1,1)·(1,2)는 미러링상 동일 궤도 — 내부 클래스는 이 한 판만 유지
-  { board: 5, enemies: [[1,1]],       schedule: [1,1,1,1,1,1,1,1],       spread: true, combat: true, min: 8, exactBudget: true, seeds: [1300001,1300002,1300003,1300005,1300006] }, // 13 5×5 내부 — v40 min=8 확정
-  { board: 5, enemies: [[2,1]],       schedule: [1,1,1,1,1,1,1,1],       spread: true, combat: true, min: 8, exactBudget: true, seeds: [1400001,1400004,1400005,1400006,1400007] }, // 14 5×5 변근접 — v40 min=8 확정
-  { board: 6, enemies: [[0,0],[2,0]], hp: 2, schedule: [1,1,1,1,1,1,1,1,1,1,1,1], spread: true, combat: true, min: 12, exactBudget: true, seeds: [1500007,1500017,1500018,1500019,1500021] }, // 15 [피날레] 6×6 확산 2기·한 칸 간격 (이 판만 내구도 2) — 예산 11 확정
+  { board: 4, enemies: [[1,2]], rightWalls: [[0,2]], downWalls: [[1,1]], schedule: [1,1,1], spread: true, combat: false, min: 3, exactBudget: true, seeds: [300001,300002,300003] }, // 3 4x4 edge wall 힌트: 적 (1,2) 왼면+윗면 벽 주머니 — 최악=최선=3턴 검증
 ];
 
 // v43 edge wall scaffold fields: rightWalls, downWalls
