@@ -69,7 +69,7 @@ const LEVELS = [
   { board: 3, enemies: [[1,1]], rightWalls: [[0,1],[1,1]], downWalls: [[1,0]], schedule: [1], spread: true, combat: false, min: 1, exactBudget: true, seeds: [100001] }, // 1 edge wall 튜토리얼: 아래 1면만 열고 막기
   { board: 3, enemies: [[1,0]], rightWalls: [[1,0]],                 schedule: [1,1], spread: true, combat: false, min: 2, exactBudget: true, seeds: [200001] }, // 2 edge wall 반응 실험
   { board: 4, enemies: [[1,2]], rightWalls: [[0,2]], downWalls: [[1,1]], schedule: [1,1,1], spread: true, combat: false, min: 3, exactBudget: true, seeds: [300001,300002,300003] }, // 3 4x4 edge wall 힌트 실험
-  { board: 4, enemies: [[0,1],[3,1]], rightWalls: [[0,1],[2,1]], schedule: [1,1,1,1], spread: true, combat: false, min: 4, exactBudget: true, seeds: [400001] }, // 4 test용: 양쪽 적을 각 2면씩 막아 4턴 테스트
+  { board: 4, enemies: [[0,1],[3,1]], rightWalls: [[0,1],[2,1]], downWalls: [], schedule: [1,1,1,1], spread: true, combat: false, min: 4, exactBudget: true, seeds: [400001] }, // 4 후보 A: 좌우 분리형
   { board: 4, enemies: [[1,1],[2,2]], rightWalls: [[0,1],[1,1],[2,2]], downWalls: [[1,0],[2,1]], schedule: [1,1,1,1,1], spread: true, combat: false, min: 5, exactBudget: true, seeds: [500001,500002,500003] }, // 5 벽 구조 응용: 두 적의 열린 면 읽기
   { board: 5, enemies: [[1,1]],       schedule: [1,1,1,1,1,1,1,1,1], spread: true, combat: false, min: 9, exactBudget: true, seeds: [600001,600002,600003,600004,600005] }, // 6 5×5 내부 — 예산 8→9 (낙차 40%p 해소)
   { board: 5, enemies: [[2,1]],       schedule: [1,1,1,1,1,1,1,1],     spread: true, combat: false, min: 8, exactBudget: true, seeds: [700001,700002,700003,700007] }, // 7 5×5 변근접 내부
