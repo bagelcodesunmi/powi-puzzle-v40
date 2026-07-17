@@ -150,8 +150,6 @@ function loadLevel(i, { reuse = false } = {}) {
   levelIdx = i;
   level = LEVELS[i];
   N = level.board;
-  rightWallSet = new Set((level.rightWalls || []).map(([x,y]) => wallKey(x,y)));
-  downWallSet = new Set((level.downWalls || []).map(([x,y]) => wallKey(x,y)));
 
   // 시드 선택 및 PRNG 초기화
   const seed = pickSeed(level, reuse);
@@ -184,6 +182,12 @@ function loadLevel(i, { reuse = false } = {}) {
   for (const [x, y] of level.enemies) {
     grid[idx(fx ? N - 1 - x : x, fy ? N - 1 - y : y)] = ENEMY;
   }
+  // edge wall: 적과 같은 미러링 적용 (상대 위치 유지).
+  // 반전 시 경계 벽의 기준 칸이 바뀐다 — rightWall은 x반전에서 (N-2-x), downWall은 y반전에서 (N-2-y).
+  rightWallSet = new Set((level.rightWalls || []).map(([x, y]) =>
+    wallKey(fx ? N - 2 - x : x, fy ? N - 1 - y : y)));
+  downWallSet = new Set((level.downWalls || []).map(([x, y]) =>
+    wallKey(fx ? N - 1 - x : x, fy ? N - 2 - y : y)));
   if (level.walls) {   // 프리셋 벽: 적과 같은 미러링 적용 (상대 위치 유지)
     for (const [x, y, hp] of level.walls) {
       grid[idx(fx ? N - 1 - x : x, fy ? N - 1 - y : y)] = hp;
