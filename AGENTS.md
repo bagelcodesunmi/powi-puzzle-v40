@@ -27,7 +27,7 @@
 - `solver-v40.js` — 적대적(worst-case) 솔버. 레벨 검증 도구
   - 실행: `node solver-v40.js [레벨번호] [--budget N] [--time S]`
   - 예: `node solver-v40.js 12,13 --budget 4`
-- `level-lab-v4.html` — 레벨 설계 & 검증 GUI 도구 (⚠️ edge wall 미지원 — 배치/시뮬 업데이트 필요)
+- `level-lab-v4.html` — 레벨 설계 & 검증 GUI 도구 (edge wall 배치·솔버·시드 뽑기 지원, 2026-07-18)
 - 구버전 도구·탐색 스크립트(budget-scan, find-* 등)와 구 프로토타입(v40, v42)은 전부 `폐기/`로 이동
 - `레벨-감정곡선.html` — 레벨 난이도 감정곡선 시각화
 

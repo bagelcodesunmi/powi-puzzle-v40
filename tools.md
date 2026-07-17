@@ -4,7 +4,9 @@
 > 마지막 업데이트: 2026-07-18
 > ⚠️ 구버전 도구·일회성 탐색 스크립트(budget-scan*, budget-test, find-*, level-lab-v2/v3)는
 >   전부 `폐기/`로 이동했다. 아래 상세 설명 중 해당 파일은 `폐기/` 경로 기준으로 읽을 것.
-> ⚠️ 현행 도구 중 edge wall(rightWalls/downWalls)을 지원하는 것은 아직 없다 —
+> `level-lab-v4.html`은 edge wall(rightWalls/downWalls)을 지원한다 (2026-07-18) —
+>   경계벽 배치, 적대 솔버 min 산출, 시드 뽑기(미러링 포함)까지 게임 규칙과 동일.
+>   `solver-v40.js`/`seed-validator.js`는 여전히 edge wall 미지원.
 >   edge wall 레벨 검증 절차는 `v43-edge-wall-guide.md` §14 체크리스트를 따른다.
 
 ---
@@ -15,9 +17,9 @@
 |------|------------|
 | 특정 레벨 클리어 가능 여부 확인 (edge wall 없는 레벨) | `solver-v40.js` |
 | 특정 레벨에 쓸 시드 선별 (edge wall 없는 레벨) | `seed-validator.js` |
-| 레벨 설계 GUI | `level-lab-v4.html` (브라우저, edge wall 미지원) |
+| 레벨 설계 GUI (edge wall 포함) | `level-lab-v4.html` (브라우저) |
 | Edge wall 실험 플레이 | `powi-puzzle-v43-edge-test.html` (브라우저) |
-| Edge wall 레벨 검증 | `v43-edge-wall-guide.md` §14 체크리스트 (전용 툴 없음) |
+| Edge wall 레벨 검증 | `level-lab-v4.html` 솔버 + `v43-edge-wall-guide.md` §14 체크리스트 |
 | 구버전 예산 스캔·레벨 탐색 | `폐기/` 폴더 참조 (budget-scan*, find-*) |
 
 ---
