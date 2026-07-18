@@ -1,6 +1,6 @@
 # v43 Edge Wall Guide
 
-> 대상: `powi-puzzle-v43-edge-test.html`(실험 본체), `powi-puzzle-v43.html`(뼈대), `level-lab-v4.html`(툴, edge wall 지원 — §14 참조)
+> 대상: `powi-puzzle-v43-edge-test.html`(현재 게임), `level-lab-v4.html`(툴, edge wall 지원 — §14 참조), `Level/level-lab-v2-saves.json`(레벨 단일 소스)
 > 목적: 경계형 벽(edge wall) 시스템을 도입해 초반 1~3레벨 튜토리얼을 재설계하기 위한 기준 문서
 > 상태: 실험 진행 중 — edge-test 파일은 튜토리얼 1~3레벨만 유지, 4레벨 이후는 삭제 후 재설계 예정
 > 작성일: 2026-07-17 / 최종 갱신: 2026-07-18 (미러링 규칙·차폐 코너·검증 체크리스트 추가)
@@ -301,12 +301,11 @@ edge wall 실험은 기존 baseline 레벨의 체감과 템포를 깨면 안 된
 
 ---
 
-## 12. 운영 원칙
+## 12. 운영 원칙 (2026-07-18 갱신)
 
-- `v41`은 메인 안정 버전으로 유지
-- `v42`는 타일형 벽 기반 초반 실험 기록
-- `v43`는 edge wall 기반 재설계 실험
-- 메인 반영 여부는 플레이 테스트 후 결정
+- **현재 게임 = `powi-puzzle-v43-edge-test.html`** (edge wall 기반). 레벨 소스는 `Level/level-lab-v2-saves.json` 단일.
+- 구 빌드는 전부 `폐기/`에 보관: `v41`(구 메인 안정판), `v42`(타일형 벽 실험 기록), `powi-puzzle-v43.html`(뼈대).
+- 현재 게임에서 쓰지 않는 도구도 `폐기/`로 이동 (solver-v40.js, seed-validator.js 등 — edge wall 미지원).
 
 ## 13. 레벨 제작 절차: 배치 먼저, 턴 수는 결과 확인
 
