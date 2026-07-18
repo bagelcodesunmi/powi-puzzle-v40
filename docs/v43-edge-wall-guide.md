@@ -304,8 +304,8 @@ edge wall 실험은 기존 baseline 레벨의 체감과 템포를 깨면 안 된
 ## 12. 운영 원칙 (2026-07-18 갱신)
 
 - **현재 게임 = `powi-puzzle.html`** (edge wall 기반). 레벨 소스는 `Level/levels.json` 단일.
-- 구 빌드는 전부 `폐기/`에 보관: `v41`(구 메인 안정판), `v42`(타일형 벽 실험 기록), `powi-puzzle-v43.html`(뼈대).
-- 현재 게임에서 쓰지 않는 도구도 `폐기/`로 이동 (solver-v40.js, seed-validator.js 등 — edge wall 미지원).
+- 구 빌드는 전부 `archive/`에 보관: `v41`(구 메인 안정판), `v42`(타일형 벽 실험 기록), `powi-puzzle-v43.html`(뼈대).
+- 현재 게임에서 쓰지 않는 도구도 `archive/`로 이동 (solver-v40.js, seed-validator.js 등 — edge wall 미지원).
 
 ## 13. 레벨 제작 절차: 배치 먼저, 턴 수는 결과 확인
 
