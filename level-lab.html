@@ -131,6 +131,7 @@
       <li><b>검토</b>를 누르면 최소 턴이 계산됩니다. 3×3~5×5는 솔버 확정(5×5는 1~3분 소요 가능), 6×6은 봇 근사(잠정)입니다.</li>
       <li>결과 아래 <b>레벨 데이터 복사</b>로 게임 코드에 붙여넣습니다 (v42 실험 포맷 기준, 기본 필드는 v40/v41과 호환).</li>
       <li>배치는 <b>배치 저장</b>으로 보관하고, <b>파일로 내보내기</b>로 JSON 백업할 수 있습니다.</li>
+      <li><b>게임 파일에 저장</b>: "Game L숫자" 이름의 저장을 번호 순으로 <code>Level/levels.json</code>에 직접 씁니다 (크롬/엣지, 최초 1회 파일 선택). 기존 파일의 시드·비고는 보존되고, 배치가 바뀐 레벨은 시드 재검증 경고가 뜹니다. 서버로 연 게임은 새로고침만으로 반영, 더블클릭용 반영은 <code>node sync-levels.js</code>.</li>
       <li><b>일괄 검토</b>로 저장된 배치 전체의 min을 계산해 난이도 곡선을 확인하세요.</li>
     </ol>
   </div>
@@ -225,6 +226,9 @@
       <button class="btn ghost sm" id="exportBtn" style="flex:1">파일로 내보내기</button>
       <button class="btn ghost sm" id="importBtn" style="flex:1">파일 가져오기</button>
       <input id="importFile" type="file" accept=".json,application/json" hidden>
+    </div>
+    <div class="saveRow">
+      <button class="btn primary sm" id="writeGameBtn" style="flex:1">게임 파일에 저장 (Level/levels.json)</button>
     </div>
     <div class="saveRow">
       <button class="btn ghost sm" id="batchBtn" style="flex:1">저장 배치 일괄 검토 (난이도 곡선)</button>
@@ -963,6 +967,66 @@ document.getElementById('importFile').onchange = e => {
   reader.readAsText(file);
 };
 
+// ---------- 게임 파일에 직접 저장 (File System Access API — 크롬/엣지) ----------
+// "Game L숫자" 이름의 저장만 게임 레벨로 나간다 (번호 순). 다른 이름의 작업본은 로컬에만 남는다.
+// 최초 1회 Level/levels.json을 선택해 권한을 주면, 이후에는 클릭 한 번으로 바로 써진다 (세션 동안 유지).
+// 기존 파일의 게임 필드(schedule/min/seeds/note)는 이름 기준으로 병합 보존 —
+// 배치·예산이 바뀐 레벨은 schedule을 재생성하고 시드 재검증 경고를 띄운다.
+let gameFileHandle = null;
+const geomKey = s => JSON.stringify([s.board, s.combat, s.hp, s.mirror !== false,
+  (s.enemies || []).map(e => [e.x, e.y]), (s.walls || []).map(w => [w.x, w.y, w.hp]),
+  (s.rightWalls || []).map(w => [w.x, w.y]), (s.downWalls || []).map(w => [w.x, w.y])]);
+document.getElementById('writeGameBtn').onclick = async () => {
+  if (!window.showOpenFilePicker) { msg('이 브라우저는 파일 직접 저장을 지원하지 않습니다 (크롬/엣지 필요). "파일로 내보내기"를 사용해주세요.'); return; }
+  const gameSaves = saves.filter(s => /^Game L\d+$/.test(s.name)).sort((a, b) => +a.name.slice(6) - +b.name.slice(6));
+  if (!gameSaves.length) { msg('"Game L숫자" 이름의 저장이 없습니다. 게임 레벨은 이 이름 규칙으로 저장해주세요.'); return; }
+  try {
+    if (!gameFileHandle) {
+      msg('Level/levels.json 파일을 선택해주세요 (최초 1회)…');
+      const [h] = await window.showOpenFilePicker({ types: [{ description: 'levels.json', accept: { 'application/json': ['.json'] } }] });
+      if ((await h.requestPermission({ mode: 'readwrite' })) !== 'granted') { msg('쓰기 권한이 거부되었습니다.'); return; }
+      gameFileHandle = h;
+    }
+    // 기존 파일 읽어 게임 필드 병합
+    let existing = {};
+    try {
+      const txt = await (await gameFileHandle.getFile()).text();
+      for (const s of (JSON.parse(txt).saves || [])) existing[s.name] = s;
+    } catch (e) { /* 새 파일이거나 파싱 실패 → 병합 없이 진행 */ }
+    const warns = [];
+    const out = gameSaves.map(s => {
+      const old = existing[s.name];
+      const min = Number.isInteger(s.setBudget) ? s.setBudget : (old && Number.isInteger(old.min) ? old.min : null);
+      if (min === null) { warns.push(`${s.name}: 예산 미정 — "예산 직접"으로 정하거나 검토 후 저장 필요`); }
+      const sameGeom = old && geomKey(old) === geomKey(s);
+      const entry = {
+        name: s.name, board: s.board, combat: s.combat, hp: s.hp || 1, mirror: s.mirror !== false,
+        setBudget: s.setBudget ?? null,
+        enemies: s.enemies, walls: s.walls || [], rightWalls: s.rightWalls || [], downWalls: s.downWalls || [],
+        schedule: (sameGeom && old.schedule && old.min === min) ? old.schedule : Array(min || 1).fill(1),
+        spread: old ? old.spread !== false : true,
+        min, exactBudget: old && typeof old.exactBudget === 'boolean' ? old.exactBudget : true,
+        seeds: old && Array.isArray(old.seeds) ? old.seeds : [],
+        note: old && old.note ? old.note : '',
+        savedAt: s.savedAt || Date.now(),
+      };
+      if (!sameGeom && old) warns.push(`${s.name}: 배치 변경됨 — 시드 재검증 필요 (시드 뽑기 후 다시 저장)`);
+      if (!old) warns.push(`${s.name}: 새 레벨 — 시드 없음 (시드 뽑기 권장)`);
+      return entry;
+    });
+    const w = await gameFileHandle.createWritable();
+    await w.write(JSON.stringify({ version: 3, saves: out }, null, 2));
+    await w.close();
+    msg(`게임 파일 저장 완료 — ${out.length}개 레벨. ` +
+        (warns.length ? `⚠️ ${warns.join(' / ')} · ` : '') +
+        '반영: 서버로 연 게임은 새로고침만, 더블클릭용은 node sync-levels.js 실행.');
+  } catch (err) {
+    if (err && err.name === 'AbortError') { msg('파일 선택이 취소되었습니다.'); return; }
+    gameFileHandle = null;
+    msg('게임 파일 저장 실패: ' + err.message);
+  }
+};
+
 const WORKER_SRC = document.getElementById('workerSrc').textContent;
 const prog = document.getElementById('prog'), pbar = document.getElementById('pbar');
 let progText = '', startT = 0, tick = null;
@@ -979,7 +1043,7 @@ function renderProg() {
 const runBtn = document.getElementById('runBtn'), stopBtn = document.getElementById('stopBtn');
 
 function lockPanels(on) {
-  for (const id of ['saveBtn', 'loadBtn', 'delBtn', 'exportBtn', 'importBtn', 'batchBtn'])
+  for (const id of ['saveBtn', 'loadBtn', 'delBtn', 'exportBtn', 'importBtn', 'batchBtn', 'writeGameBtn'])
     document.getElementById(id).disabled = on;
   runBtn.disabled = on; stopBtn.disabled = !on;
 }

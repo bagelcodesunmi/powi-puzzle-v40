@@ -12,11 +12,16 @@
 
 ## 레벨 데이터 단일 소스 (2026-07-18 확정)
 - **유일한 소스는 `Level/levels.json` 하나다.** 레벨 배치·min·seeds·schedule·설명(note)까지 이 파일이 전부 갖는다.
-- 게임(`powi-puzzle.html`의 `LEVELS`)과 툴(`level-lab.html`의 `PRESETS`)은 이 json에서 **생성**된다. 두 파일의 해당 블록은 `▼ AUTO-GENERATED` 주석이 붙어 있고 **직접 편집 금지**.
-- 반영 방법: **`node sync-levels.js`** 실행 → json을 읽어 게임 LEVELS와 툴 PRESETS에 기입하고 `PRESET_VER`를 +1 한다.
-- 런타임 fetch가 아니라 빌드 시 주입이라, 게임·툴은 여전히 더블클릭(file://)으로 열려도 정상 동작한다.
-- 워크플로우: **json 편집(또는 툴에서 편집 후 그 값을 json에 반영) → `node sync-levels.js` → 게임·툴 자동 갱신**.
+- 게임 레벨로 인식되는 이름 규칙: **`Game L숫자`** (번호 순 정렬). 다른 이름의 저장은 작업본으로만 취급.
 - json 스키마(레벨당): `name, board, combat, hp, mirror, setBudget, enemies[{x,y}], walls[{x,y,hp}], rightWalls[{x,y}], downWalls[{x,y}], schedule[], spread, min, exactBudget, seeds[], note`.
+
+### 반영 경로 (셋 다 소스는 같은 json)
+1. **툴 → json 직접 저장**: level-lab의 **"게임 파일에 저장"** 버튼 (크롬/엣지, 최초 1회 `Level/levels.json` 선택).
+   `Game L*` 저장만 병합 기록하고, 기존 파일의 seeds/note/schedule은 이름 기준 보존. 배치가 바뀐 레벨은 시드 재검증 경고.
+2. **게임 실시간 로드**: 게임을 서버(localhost/미리보기)로 열면 `Level/levels.json`을 직접 읽는다 — **새로고침만으로 반영, sync 불필요**.
+3. **더블클릭(file://) 배포용**: `node sync-levels.js` 실행 → json을 게임 `LEVELS`·툴 `PRESETS`에 굽는다 (`▼ AUTO-GENERATED` 블록, 직접 편집 금지).
+   sync는 툴 내보내기 포맷(게임 필드 없음)도 허용 — min은 setBudget에서 보완하고 경고를 출력한다.
+- 권장 루틴: 툴에서 편집·검토 → "게임 파일에 저장" → (서버로 연) 게임 새로고침으로 확인 → 커밋 전 `node sync-levels.js` 1회.
 
 ---
 

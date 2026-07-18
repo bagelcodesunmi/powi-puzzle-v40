@@ -849,9 +849,43 @@ document.querySelector('#hud span').addEventListener('click', () => {
 document.querySelectorAll('#hud span')[1].addEventListener('click', () => loadLevel(8));
 window.addEventListener('resize', resize);
 
+// ── 레벨 소스 실시간 로드 ──
+// 서버(localhost/미리보기)로 열면 Level/levels.json을 직접 읽어 최신 레벨로 교체 — sync 없이 새로고침만으로 반영.
+// 더블클릭(file://)이나 json 읽기 실패 시에는 위의 AUTO-GENERATED LEVELS(마지막 sync 시점)를 그대로 사용.
+function levelFromSave(s) {
+  const min = Number.isInteger(s.min) ? s.min : s.setBudget;
+  const lv = {
+    board: s.board, combat: !!s.combat,
+    enemies: (s.enemies || []).map(e => [e.x, e.y]),
+    schedule: Array.isArray(s.schedule) && s.schedule.length ? s.schedule : Array(min).fill(1),
+    spread: s.spread !== false, min,
+    exactBudget: s.exactBudget !== false,
+    seeds: Array.isArray(s.seeds) ? s.seeds : [],
+  };
+  if (s.walls && s.walls.length) lv.walls = s.walls.map(w => [w.x, w.y, w.hp]);
+  if (s.rightWalls && s.rightWalls.length) lv.rightWalls = s.rightWalls.map(w => [w.x, w.y]);
+  if (s.downWalls && s.downWalls.length) lv.downWalls = s.downWalls.map(w => [w.x, w.y]);
+  if (s.hp === 2) lv.hp = 2;
+  if (s.mirror === false) lv.mirror = false;
+  return lv;
+}
+async function loadLiveLevels() {
+  try {
+    const r = await fetch('Level/levels.json', { cache: 'no-store' });
+    if (!r.ok) return;
+    const data = await r.json();
+    const games = (data.saves || [])
+      .filter(s => /^Game L\d+$/.test(s.name) && Number.isInteger(s.min || s.setBudget))
+      .sort((a, b) => +a.name.slice(6) - +b.name.slice(6));
+    if (!games.length) return;
+    LEVELS.length = 0;
+    LEVELS.push(...games.map(levelFromSave));
+    console.log(`[levels] Level/levels.json 실시간 로드: ${LEVELS.length}개`);
+  } catch (e) { /* file:// 등 — 구운 LEVELS 사용 */ }
+}
+
 resize();
-loadLevel(0);
-requestAnimationFrame(loop);
+loadLiveLevels().then(() => { loadLevel(0); requestAnimationFrame(loop); });
 </script>
 </body>
 </html>
