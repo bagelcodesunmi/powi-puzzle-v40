@@ -13,6 +13,23 @@ const data = JSON.parse(fs.readFileSync(JSON_PATH, 'utf8'));
 const saves = data.saves;
 if (!Array.isArray(saves) || !saves.length) { console.error('소스 json에 레벨이 없습니다.'); process.exit(1); }
 
+// ── 툴 "파일로 내보내기" 포맷 허용 ──
+// 툴 내보내기에는 게임 필드(schedule/min/seeds/spread/exactBudget)가 없다.
+// 그대로 덮어써도 동작하도록 보완하되, 무엇을 추정했는지 경고를 남긴다.
+// (min은 setBudget에서 가져오고, seeds가 비면 완전 랜덤 확산이 되므로 반드시 레벨랩에서 시드를 뽑아 채울 것.)
+for (const s of saves) {
+  const warn = [];
+  if (!Number.isInteger(s.min)) {
+    if (Number.isInteger(s.setBudget)) { s.min = s.setBudget; warn.push(`min 없음 → setBudget(${s.setBudget}) 사용`); }
+    else { console.error(`[중단] "${s.name}"에 min도 setBudget도 없습니다. 레벨랩에서 검토 후 예산을 정해 주세요.`); process.exit(1); }
+  }
+  if (!Array.isArray(s.schedule) || !s.schedule.length) { s.schedule = Array(s.min).fill(1); warn.push(`schedule 없음 → [1]×${s.min} 생성`); }
+  if (typeof s.spread !== 'boolean') { s.spread = true; warn.push('spread 없음 → true'); }
+  if (typeof s.exactBudget !== 'boolean') { s.exactBudget = true; warn.push('exactBudget 없음 → true'); }
+  if (!Array.isArray(s.seeds)) { s.seeds = []; warn.push('⚠️ seeds 없음 → 빈 배열 (완전 랜덤 확산 — 레벨랩 시드 뽑기로 채울 것)'); }
+  if (warn.length) console.warn(`[보완] ${s.name}: ${warn.join(' · ')}`);
+}
+
 const xyArr = a => '[' + (a || []).map(w => `[${w.x},${w.y}]`).join(',') + ']';
 const xyObj = a => '[' + (a || []).map(w => `{ x: ${w.x}, y: ${w.y} }`).join(', ') + ']';
 

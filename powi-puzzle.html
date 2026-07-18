@@ -61,10 +61,10 @@
 // ─── 삭제된 시스템: 머지, 영토(자동 벽·틴트·배치 금지), 열매·아이템, 별점.
 const LEVELS = [
   // ▼ AUTO-GENERATED — Level/levels.json 에서 생성됨. 직접 편집 금지. 재생성: node sync-levels.js
-  { board: 3, enemies: [[1,1]], rightWalls: [[0,1],[1,1]], downWalls: [[1,0]], schedule: [1], spread: true, combat: false, min: 1, exactBudget: true, seeds: [100001] }, // 1 edge wall 튜토리얼: 아래 1면만 열고 막기
-  { board: 3, enemies: [[1,0]], rightWalls: [[1,0]], schedule: [1,1], spread: true, combat: false, min: 2, exactBudget: true, seeds: [200001] }, // 2 edge wall 반응 실험
-  { board: 4, enemies: [[1,2]], rightWalls: [[0,2]], downWalls: [[1,1]], schedule: [1,1,1], spread: true, combat: false, min: 3, exactBudget: true, seeds: [300001,300002,300003] }, // 3 4x4 edge wall 힌트: 적 (1,2) 왼면+윗면 벽 주머니 — 최악=최선=3턴 검증
-  { board: 4, enemies: [[0,0],[2,0]], rightWalls: [[2,0]], downWalls: [[0,0]], mirror: false, schedule: [1,1,1,1], spread: true, combat: false, min: 4, exactBudget: true, seeds: [400001,400002,400003] }, // 4 첫 2기: 윗줄 한 칸 간격 + 통로벽 — 솔버 min 4 확정 · 예산 3 불가 · 예고봇 100% · 초보봇(아래두기) 100%
+  { board: 3, enemies: [[1,1]], rightWalls: [[0,1],[1,1]], downWalls: [[1,0]], mirror: false, schedule: [1], spread: true, combat: false, min: 1, exactBudget: true, seeds: [100001] }, // 1 edge wall 튜토리얼: 아래 1면만 열고 막기 — 방향 고정
+  { board: 3, enemies: [[1,0]], rightWalls: [[1,0]], mirror: false, schedule: [1,1], spread: true, combat: false, min: 2, exactBudget: true, seeds: [200001] }, // 2 edge wall 반응 실험 — 방향 고정
+  { board: 4, enemies: [[1,2]], rightWalls: [[0,2]], downWalls: [[1,1]], mirror: false, schedule: [1,1,1], spread: true, combat: false, min: 3, exactBudget: true, seeds: [300001,300002,300003] }, // 3 4x4 edge wall 힌트: 적 (1,2) 왼면+윗면 벽 주머니 — 방향 고정
+  { board: 4, enemies: [[0,0],[2,0]], rightWalls: [[2,0]], downWalls: [[2,0]], mirror: false, schedule: [1,1,1,1], spread: true, combat: false, min: 4, exactBudget: true, seeds: [400001,400002,400003] }, // 4 첫 2기: 오른쪽 적 ㄱ자 밀폐 + 왼쪽 추격 — 솔버 min 3(심층 수순·예고봇 0%), 예산 4(슬랙+1)로 예고봇 100% · 시드는 예산 4 기준 검증
 ];
 
 // v43 edge wall scaffold fields: rightWalls, downWalls
