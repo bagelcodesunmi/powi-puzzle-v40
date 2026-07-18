@@ -127,7 +127,7 @@
       <li>보드의 칸을 탭해 적을 놓습니다. 다시 탭하면 지워집니다. <b>경계벽 ▏/▁</b> 모드에서는 탭한 칸의 오른쪽/아래 경계에 edge wall을 토글하고(놓인 벽을 직접 탭해도 제거), <b>돌벽</b> 모드에서는 칸을 점유하는 구형 벽(HP 1~2)을 배치합니다.</li>
       <li><b>미러링 선택</b>: 게임은 시드에 따라 보드를 좌우/상하 반전합니다(재도전 다양성). <b>미러링/방향 고정</b> 토글로 레벨별로 켜고 끌 수 있고, 끄면 <code>mirror: false</code>가 레벨 데이터에 포함돼 게임에서도 항상 고정 방향으로 나옵니다. 시드 뽑기는 이 설정 그대로(edge wall 반전 포함) 계산합니다.</li>
       <li><b>초심자 첫 시선·첫 터치</b>: 초반 1~3레벨은 정답 구조뿐 아니라 처음 보는 사람이 어디를 먼저 누를지도 함께 검토하세요. 모바일 시선은 중앙에서 아래로 흐르므로, 같은 논리라면 "위를 막기"보다 "아래를 두기"가 직관적입니다. 방향이 중요한 튜토리얼은 <b>방향 고정</b>을 권장합니다.</li>
-      <li><b>게임 L1~L3 프리셋</b>: 현재 게임(powi-puzzle.html)의 레벨 1~3이 배치 저장 목록에 기본 제공됩니다. 불러와서 확인하거나 <b>일괄 검토</b>로 난이도 곡선을 바로 볼 수 있습니다.</li>
+      <li><b>Game L1~L4 프리셋</b>: 현재 게임(powi-puzzle.html)의 레벨 1~4가 배치 저장 목록에 기본 제공됩니다. 불러와서 확인하거나 <b>일괄 검토</b>로 난이도 곡선을 바로 볼 수 있습니다.</li>
       <li><b>검토</b>를 누르면 최소 턴이 계산됩니다. 3×3~5×5는 솔버 확정(5×5는 1~3분 소요 가능), 6×6은 봇 근사(잠정)입니다.</li>
       <li>결과 아래 <b>레벨 데이터 복사</b>로 게임 코드에 붙여넣습니다 (v42 실험 포맷 기준, 기본 필드는 v40/v41과 호환).</li>
       <li>배치는 <b>배치 저장</b>으로 보관하고, <b>파일로 내보내기</b>로 JSON 백업할 수 있습니다.</li>
@@ -794,17 +794,18 @@ const msg = t => { saveMsg.textContent = t; };
 // 최초 1회만 저장 목록에 추가된다 (지우면 다시 생기지 않음). 게임 레벨 데이터가 바뀌면 여기도 갱신할 것.
 const PRESETS = [
   // ▼ AUTO-GENERATED — Level/levels.json 에서 생성됨. 직접 편집 금지. 재생성: node sync-levels.js
-  { name: '게임 L1', board: 3, combat: false, hp: 1, mirror: true, enemies: [{ x: 1, y: 1 }], walls: [], rightWalls: [{ x: 0, y: 1 }, { x: 1, y: 1 }], downWalls: [{ x: 1, y: 0 }] },
-  { name: '게임 L2', board: 3, combat: false, hp: 1, mirror: true, enemies: [{ x: 1, y: 0 }], walls: [], rightWalls: [{ x: 1, y: 0 }], downWalls: [] },
-  { name: '게임 L3', board: 4, combat: false, hp: 1, mirror: true, enemies: [{ x: 1, y: 2 }], walls: [], rightWalls: [{ x: 0, y: 2 }], downWalls: [{ x: 1, y: 1 }] },
-  { name: '게임 L4', board: 4, combat: false, hp: 1, mirror: false, enemies: [{ x: 0, y: 0 }, { x: 2, y: 0 }], walls: [], rightWalls: [{ x: 2, y: 0 }], downWalls: [{ x: 0, y: 0 }] },
+  { name: 'Game L1', board: 3, combat: false, hp: 1, mirror: true, enemies: [{ x: 1, y: 1 }], walls: [], rightWalls: [{ x: 0, y: 1 }, { x: 1, y: 1 }], downWalls: [{ x: 1, y: 0 }] },
+  { name: 'Game L2', board: 3, combat: false, hp: 1, mirror: true, enemies: [{ x: 1, y: 0 }], walls: [], rightWalls: [{ x: 1, y: 0 }], downWalls: [] },
+  { name: 'Game L3', board: 4, combat: false, hp: 1, mirror: true, enemies: [{ x: 1, y: 2 }], walls: [], rightWalls: [{ x: 0, y: 2 }], downWalls: [{ x: 1, y: 1 }] },
+  { name: 'Game L4', board: 4, combat: false, hp: 1, mirror: false, enemies: [{ x: 0, y: 0 }, { x: 2, y: 0 }], walls: [], rightWalls: [{ x: 2, y: 0 }], downWalls: [{ x: 0, y: 0 }] },
 ];
-const PRESET_VER = 9;              // 프리셋 추가/변경 시 +1 — 기존 사용자에게도 새 프리셋이 1회 주입된다
+const PRESET_VER = 10;              // 프리셋 추가/변경 시 +1 — 기존 사용자에게도 새 프리셋이 1회 주입된다
 let presetVer = 0;
 function seedPresets() {
   // 버전 올라가면 프리셋(게임 레벨 사본)을 최신 데이터로 갱신 — 이름 일치 항목은 덮어쓰고, 없으면 맨 앞에 추가.
   // 사용자가 직접 만든 다른 이름 저장은 건드리지 않는다 (프리셋 편집본을 남기려면 새 이름으로 저장).
-  const presetNames = new Set(PRESETS.map(p => p.name));
+  const LEGACY_PRESET_NAMES = ['게임 L1', '게임 L2', '게임 L3', '게임 L4'];   // 영문 개명 전 구이름 — 중복 방지 정리
+  const presetNames = new Set([...PRESETS.map(p => p.name), ...LEGACY_PRESET_NAMES]);
   saves = saves.filter(s => !presetNames.has(s.name));
   saves.unshift(...PRESETS.map(p => migrate({ ...p, savedAt: Date.now() })));
   presetVer = PRESET_VER;

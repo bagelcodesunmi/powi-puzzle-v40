@@ -2,7 +2,7 @@
   "version": 3,
   "saves": [
     {
-      "name": "게임 L1",
+      "name": "Game L1",
       "board": 3,
       "combat": false,
       "hp": 1,
@@ -44,7 +44,7 @@
       "savedAt": 1784313600000
     },
     {
-      "name": "게임 L2",
+      "name": "Game L2",
       "board": 3,
       "combat": false,
       "hp": 1,
@@ -78,7 +78,7 @@
       "savedAt": 1784313600000
     },
     {
-      "name": "게임 L3",
+      "name": "Game L3",
       "board": 4,
       "combat": false,
       "hp": 1,
@@ -120,7 +120,7 @@
       "savedAt": 1784313600000
     },
     {
-      "name": "게임 L4",
+      "name": "Game L4",
       "board": 4,
       "combat": false,
       "hp": 1,
