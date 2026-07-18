@@ -8,17 +8,43 @@
       "hp": 1,
       "mirror": false,
       "setBudget": null,
-      "enemies": [{ "x": 1, "y": 1 }],
+      "enemies": [
+        {
+          "x": 1,
+          "y": 1
+        }
+      ],
       "walls": [],
-      "rightWalls": [{ "x": 0, "y": 1 }, { "x": 1, "y": 1 }],
-      "downWalls": [{ "x": 1, "y": 0 }],
-      "schedule": [1],
+      "rightWalls": [
+        {
+          "x": 0,
+          "y": 1
+        },
+        {
+          "x": 1,
+          "y": 1
+        }
+      ],
+      "downWalls": [
+        {
+          "x": 1,
+          "y": 0
+        }
+      ],
+      "schedule": [
+        1
+      ],
       "spread": true,
       "min": 1,
       "exactBudget": true,
-      "seeds": [100001],
+      "seeds": [
+        100001
+      ],
       "note": "1 edge wall 튜토리얼: 아래 1면만 열고 막기 — 방향 고정",
-      "savedAt": 1784351743478
+      "savedAt": 1784351743478,
+      "emotion": "dopamine",
+      "tag": "1탭 포획",
+      "winRate": 100
     },
     {
       "name": "Game L2",
@@ -27,17 +53,35 @@
       "hp": 1,
       "mirror": false,
       "setBudget": null,
-      "enemies": [{ "x": 1, "y": 0 }],
+      "enemies": [
+        {
+          "x": 1,
+          "y": 0
+        }
+      ],
       "walls": [],
-      "rightWalls": [{ "x": 1, "y": 0 }],
+      "rightWalls": [
+        {
+          "x": 1,
+          "y": 0
+        }
+      ],
       "downWalls": [],
-      "schedule": [1, 1],
+      "schedule": [
+        1,
+        1
+      ],
       "spread": true,
       "min": 2,
       "exactBudget": true,
-      "seeds": [200001],
+      "seeds": [
+        200001
+      ],
       "note": "2 edge wall 반응 실험 — 방향 고정",
-      "savedAt": 1784351769350
+      "savedAt": 1784351769350,
+      "emotion": "neutral",
+      "tag": "추격 봉인",
+      "winRate": 100
     },
     {
       "name": "Game L3",
@@ -46,17 +90,43 @@
       "hp": 1,
       "mirror": false,
       "setBudget": null,
-      "enemies": [{ "x": 1, "y": 2 }],
+      "enemies": [
+        {
+          "x": 1,
+          "y": 2
+        }
+      ],
       "walls": [],
-      "rightWalls": [{ "x": 0, "y": 2 }],
-      "downWalls": [{ "x": 1, "y": 1 }],
-      "schedule": [1, 1, 1],
+      "rightWalls": [
+        {
+          "x": 0,
+          "y": 2
+        }
+      ],
+      "downWalls": [
+        {
+          "x": 1,
+          "y": 1
+        }
+      ],
+      "schedule": [
+        1,
+        1,
+        1
+      ],
       "spread": true,
       "min": 3,
       "exactBudget": true,
-      "seeds": [300001, 300002, 300003],
+      "seeds": [
+        300001,
+        300002,
+        300003
+      ],
       "note": "3 4x4 edge wall 힌트: 적 (1,2) 왼면+윗면 벽 주머니 — 방향 고정",
-      "savedAt": 1784351782357
+      "savedAt": 1784351782357,
+      "emotion": "neutral",
+      "tag": "4×4 진입",
+      "winRate": 100
     },
     {
       "name": "Game L4",
@@ -65,17 +135,48 @@
       "hp": 1,
       "mirror": false,
       "setBudget": 4,
-      "enemies": [{ "x": 0, "y": 0 }, { "x": 2, "y": 0 }],
+      "enemies": [
+        {
+          "x": 0,
+          "y": 0
+        },
+        {
+          "x": 2,
+          "y": 0
+        }
+      ],
       "walls": [],
-      "rightWalls": [{ "x": 2, "y": 0 }],
-      "downWalls": [{ "x": 2, "y": 0 }],
-      "schedule": [1, 1, 1, 1],
+      "rightWalls": [
+        {
+          "x": 2,
+          "y": 0
+        }
+      ],
+      "downWalls": [
+        {
+          "x": 2,
+          "y": 0
+        }
+      ],
+      "schedule": [
+        1,
+        1,
+        1,
+        1
+      ],
       "spread": true,
       "min": 4,
       "exactBudget": true,
-      "seeds": [400001, 400002, 400003],
+      "seeds": [
+        400001,
+        400002,
+        400003
+      ],
       "note": "4 첫 2기: 오른쪽 적 ㄱ자 밀폐 + 왼쪽 추격 — 솔버 min 3(심층 수순·예고봇 0%), 예산 4(슬랙+1)로 예고봇 100% · 시드는 예산 4 기준 검증",
-      "savedAt": 1784352056624
+      "savedAt": 1784352056624,
+      "emotion": "dopamine",
+      "tag": "첫 2기",
+      "winRate": 100
     }
   ]
 }

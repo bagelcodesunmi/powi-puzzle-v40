@@ -1,13 +1,14 @@
 // sync-levels.js — 레벨 데이터 단일 소스 동기화
 // 소스: Level/levels.json (유일한 편집 지점)
-// 대상: powi-puzzle.html 의 LEVELS, level-lab.html 의 PRESETS
-// 사용: node sync-levels.js   (json 편집 후 실행하면 게임·툴에 반영됨. 더블클릭 실행에도 안전 — 런타임 fetch 아님)
+// 대상: powi-puzzle.html 의 LEVELS, level-lab.html 의 PRESETS, emotion-curve.html 의 LEVELS
+// 사용: node sync-levels.js   (json 편집 후 실행하면 게임·툴·감정곡선에 반영됨. 더블클릭 실행에도 안전 — 런타임 fetch 아님)
 const fs = require('fs');
 const path = require('path');
 const ROOT = __dirname;
 const JSON_PATH = path.join(ROOT, 'Level', 'levels.json');
 const GAME = path.join(ROOT, 'powi-puzzle.html');
 const TOOL = path.join(ROOT, 'level-lab.html');
+const CURVE = path.join(ROOT, 'emotion-curve.html');
 
 const data = JSON.parse(fs.readFileSync(JSON_PATH, 'utf8'));
 const saves = data.saves;
@@ -80,6 +81,14 @@ tool = replaceArray(tool, 'PRESETS', toolBody);
 tool = tool.replace(/const PRESET_VER = (\d+);/, (_, n) => `const PRESET_VER = ${+n + 1};`);
 fs.writeFileSync(TOOL, tool);
 
+// ── 감정곡선 반영 (save 객체 전체를 스냅샷으로 굽는다 — file:// 열기용) ──
+let curve = fs.readFileSync(CURVE, 'utf8');
+const curveBody =
+  '// ▼ AUTO-GENERATED — Level/levels.json 에서 생성됨. 직접 편집 금지. 재생성: node sync-levels.js\n' +
+  saves.map(s => '  ' + JSON.stringify(s) + ',').join('\n');
+curve = replaceArray(curve, 'LEVELS', curveBody);
+fs.writeFileSync(CURVE, curve);
+
 const ver = tool.match(/const PRESET_VER = (\d+);/)[1];
-console.log(`동기화 완료: ${saves.length}개 레벨 → 게임 LEVELS + 툴 PRESETS (PRESET_VER=${ver})`);
-saves.forEach((s, i) => console.log(`  L${i + 1} ${s.name}: min ${s.min}, seeds [${s.seeds}]`));
+console.log(`동기화 완료: ${saves.length}개 레벨 → 게임 LEVELS + 툴 PRESETS (PRESET_VER=${ver}) + 감정곡선`);
+saves.forEach((s, i) => console.log(`  L${i + 1} ${s.name}: min ${s.min}, seeds [${s.seeds}], emotion ${s.emotion || '-'}`));

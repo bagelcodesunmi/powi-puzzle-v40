@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>포위퍼즐 — 레벨 감정 곡선</title>
+<style>
+  :root {
+    --bg: #14121a;
+    --panel: #1e1a28;
+    --line: #3a3450;
+    --dim: rgba(232,228,218,.6);
+    --stone: #e8e4da;
+    --dopamine: #46b46e;
+    --stress: #d94a3d;
+    --neutral: #3478f6;
+    --warn: #e8903a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--stone); font-family: system-ui, sans-serif; padding: 28px 20px 60px; }
+  h1 { font-size: 16px; font-weight: 800; letter-spacing: .1em; margin-bottom: 4px; }
+  .sub { font-size: 12px; color: var(--dim); margin-bottom: 28px; }
+
+  .legend { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 24px; }
+  .leg { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--dim); }
+  .leg-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+  .chart-wrap { overflow-x: auto; padding-bottom: 8px; }
+  .chart { display: flex; align-items: flex-end; gap: 6px; min-width: 320px; max-width: 720px; height: 260px; padding: 0 4px; }
+  .col { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 48px; }
+  .bar-area { flex: 1; width: 100%; display: flex; align-items: flex-end; }
+  .bar { width: 100%; border-radius: 6px 6px 0 0; transition: opacity .15s; cursor: default; position: relative; }
+  .bar:hover { opacity: .75; }
+  .bar-label { position: absolute; top: -20px; left: 50%; transform: translateX(-50%);
+               font-size: 10px; font-weight: 700; color: var(--stone); white-space: nowrap; }
+  .lv-num { font-size: 11px; font-weight: 800; color: var(--dim); }
+  .lv-tag { font-size: 9px; color: var(--dim); text-align: center; line-height: 1.3; max-width: 56px; }
+
+  .rate-chart { margin-top: 28px; max-width: 720px; }
+  .rate-chart h2 { font-size: 13px; font-weight: 800; color: var(--dim); letter-spacing: .08em; margin-bottom: 12px; }
+  .rate-row { display: flex; align-items: center; gap: 10px; margin-bottom: 7px; font-size: 12px; }
+  .rate-lv { width: 50px; color: var(--dim); text-align: right; flex-shrink: 0; }
+  .rate-bar-wrap { flex: 1; height: 10px; background: var(--line); border-radius: 5px; overflow: hidden; }
+  .rate-bar-fill { height: 100%; border-radius: 5px; }
+  .rate-val { width: 44px; flex-shrink: 0; text-align: right; font-weight: 700; }
+
+  .sections { margin-top: 32px; display: flex; flex-direction: column; gap: 10px; max-width: 720px; }
+  .section-card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px;
+                  display: flex; gap: 14px; align-items: flex-start; }
+  .section-badge { flex-shrink: 0; font-size: 10px; font-weight: 800; border-radius: 6px;
+                   padding: 4px 10px; margin-top: 2px; }
+  .badge-dopamine { background: var(--dopamine); color: #0a2e1a; }
+  .badge-stress    { background: var(--stress);   color: #fff; }
+  .badge-neutral   { background: var(--neutral);  color: #fff; }
+  .badge-warn      { background: var(--warn);     color: #1a0f00; }
+  .section-body h3 { font-size: 13px; font-weight: 800; margin-bottom: 3px; }
+  .section-body p  { font-size: 12px; color: var(--dim); line-height: 1.6; }
+
+  .note { font-size: 11px; color: var(--dim); line-height: 1.7; margin-top: 28px; max-width: 720px; }
+</style>
+</head>
+<body>
+
+<h1>포위퍼즐 — 레벨 감정 곡선</h1>
+<div class="sub" id="sub">레벨 소스(Level/levels.json) 기반 자동 생성</div>
+
+<div class="legend">
+  <div class="leg"><div class="leg-dot" style="background:var(--dopamine)"></div>도파민 (쉽고 쾌감)</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--stress)"></div>스트레스 (어렵고 긴장)</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--neutral)"></div>학습 (새 개념 도입)</div>
+  <div class="leg"><div class="leg-dot" style="background:var(--warn)"></div>전환점 (보드/규칙 변화)</div>
+</div>
+
+<div class="chart-wrap"><div class="chart" id="mainChart"></div></div>
+
+<div class="rate-chart">
+  <h2>예고봇 승률 (min 예산 · 레벨랩 측정값)</h2>
+  <div id="rateChart"></div>
+</div>
+
+<div class="sections" id="sections"></div>
+
+<div class="note">
+  데이터 소스: <b>Level/levels.json</b> (단일 소스). 서버(미리보기/localhost)로 열면 실시간 로드,
+  더블클릭(file://)은 마지막 <code>node sync-levels.js</code> 시점의 스냅샷.<br>
+  감정 태그(emotion: dopamine/stress/neutral/warn)와 라벨(tag), 예고봇 승률(winRate)은 json에서 레벨별로 편집한다.
+  승률은 레벨랩 "검토" 결과를 기록해 넣는 값이며, 비어 있으면 — 로 표시된다.
+</div>
+
+<script>
+const LEVELS = [
+// ▼ AUTO-GENERATED — Level/levels.json 에서 생성됨. 직접 편집 금지. 재생성: node sync-levels.js
+  {"name":"Game L1","board":3,"combat":false,"hp":1,"mirror":false,"setBudget":null,"enemies":[{"x":1,"y":1}],"walls":[],"rightWalls":[{"x":0,"y":1},{"x":1,"y":1}],"downWalls":[{"x":1,"y":0}],"schedule":[1],"spread":true,"min":1,"exactBudget":true,"seeds":[100001],"note":"1 edge wall 튜토리얼: 아래 1면만 열고 막기 — 방향 고정","savedAt":1784351743478,"emotion":"dopamine","tag":"1탭 포획","winRate":100},
+  {"name":"Game L2","board":3,"combat":false,"hp":1,"mirror":false,"setBudget":null,"enemies":[{"x":1,"y":0}],"walls":[],"rightWalls":[{"x":1,"y":0}],"downWalls":[],"schedule":[1,1],"spread":true,"min":2,"exactBudget":true,"seeds":[200001],"note":"2 edge wall 반응 실험 — 방향 고정","savedAt":1784351769350,"emotion":"neutral","tag":"추격 봉인","winRate":100},
+  {"name":"Game L3","board":4,"combat":false,"hp":1,"mirror":false,"setBudget":null,"enemies":[{"x":1,"y":2}],"walls":[],"rightWalls":[{"x":0,"y":2}],"downWalls":[{"x":1,"y":1}],"schedule":[1,1,1],"spread":true,"min":3,"exactBudget":true,"seeds":[300001,300002,300003],"note":"3 4x4 edge wall 힌트: 적 (1,2) 왼면+윗면 벽 주머니 — 방향 고정","savedAt":1784351782357,"emotion":"neutral","tag":"4×4 진입","winRate":100},
+  {"name":"Game L4","board":4,"combat":false,"hp":1,"mirror":false,"setBudget":4,"enemies":[{"x":0,"y":0},{"x":2,"y":0}],"walls":[],"rightWalls":[{"x":2,"y":0}],"downWalls":[{"x":2,"y":0}],"schedule":[1,1,1,1],"spread":true,"min":4,"exactBudget":true,"seeds":[400001,400002,400003],"note":"4 첫 2기: 오른쪽 적 ㄱ자 밀폐 + 왼쪽 추격 — 솔버 min 3(심층 수순·예고봇 0%), 예산 4(슬랙+1)로 예고봇 100% · 시드는 예산 4 기준 검증","savedAt":1784352056624,"emotion":"dopamine","tag":"첫 2기","winRate":100},
+];
+
+const COLOR = { dopamine: 'var(--dopamine)', stress: 'var(--stress)', neutral: 'var(--neutral)', warn: 'var(--warn)' };
+
+function render(levels) {
+  const games = levels
+    .filter(s => /^Game L\d+$/.test(s.name))
+    .sort((a, b) => +a.name.slice(6) - +b.name.slice(6));
+  if (!games.length) { document.getElementById('sub').textContent = '레벨 데이터가 없습니다 — node sync-levels.js 실행 필요'; return; }
+
+  // 메인 바 차트 — 높이 = 예산(min), 색 = 감정 태그
+  const maxMin = Math.max(...games.map(l => l.min || 1));
+  const chart = document.getElementById('mainChart');
+  chart.innerHTML = '';
+  for (const l of games) {
+    const lv = +l.name.slice(6);
+    const em = COLOR[l.emotion] ? l.emotion : 'neutral';
+    const h = Math.round(((l.min || 1) / maxMin) * 100);
+    const col = document.createElement('div');
+    col.className = 'col';
+    col.innerHTML =
+      `<div class="bar-area"><div class="bar" style="height:${h}%;background:${COLOR[em]}" ` +
+      `title="Lv${lv} · ${l.board}×${l.board} · 예산 ${l.min}${l.combat ? ' · 전투' : ''}">` +
+      `<span class="bar-label">${l.min}턴</span></div></div>` +
+      `<div class="lv-num">Lv${lv}</div><div class="lv-tag">${l.tag || ''}</div>`;
+    chart.appendChild(col);
+  }
+
+  // 예고봇 승률 바
+  const rateChart = document.getElementById('rateChart');
+  rateChart.innerHTML = '';
+  for (const l of games) {
+    const lv = +l.name.slice(6);
+    const has = Number.isFinite(l.winRate);
+    const rate = has ? Math.min(99.5, l.winRate) : 0;
+    const color = !has ? 'var(--line)' : l.winRate >= 85 ? 'var(--dopamine)' : l.winRate >= 60 ? 'var(--warn)' : 'var(--stress)';
+    const row = document.createElement('div');
+    row.className = 'rate-row';
+    row.innerHTML =
+      `<div class="rate-lv">Lv${lv}</div>` +
+      `<div class="rate-bar-wrap"><div class="rate-bar-fill" style="width:${rate}%;background:${color}"></div></div>` +
+      `<div class="rate-val" style="color:${has ? color : 'var(--dim)'}">${has ? l.winRate + '%' : '—'}</div>`;
+    rateChart.appendChild(row);
+  }
+
+  // 레벨 카드 — note를 그대로 설명으로
+  const EM_LABEL = { dopamine: '도파민', stress: '스트레스', neutral: '학습', warn: '전환점' };
+  const sections = document.getElementById('sections');
+  sections.innerHTML = '';
+  for (const l of games) {
+    const lv = +l.name.slice(6);
+    const em = COLOR[l.emotion] ? l.emotion : 'neutral';
+    const card = document.createElement('div');
+    card.className = 'section-card';
+    card.innerHTML =
+      `<span class="section-badge badge-${em}">Lv${lv} · ${EM_LABEL[em]}</span>` +
+      `<div class="section-body"><h3>${l.tag || l.name} — ${l.board}×${l.board}, 예산 ${l.min}${l.combat ? ', 전투' : ''}${l.mirror === false ? ', 방향 고정' : ''}</h3>` +
+      `<p>${l.note || '(설명 없음 — Level/levels.json의 note 필드에 기록)'}</p></div>`;
+    sections.appendChild(card);
+  }
+
+  document.getElementById('sub').textContent =
+    `레벨 ${games.length}개 · 소스: Level/levels.json` + (render.live ? ' (실시간 로드)' : ' (스냅샷 — sync 시점)');
+}
+
+// 서버로 열면 json 실시간 로드, 실패(file:// 등) 시 구운 LEVELS 사용 — 게임과 동일한 하이브리드
+(async () => {
+  try {
+    const r = await fetch('Level/levels.json', { cache: 'no-store' });
+    if (r.ok) {
+      const data = await r.json();
+      if (Array.isArray(data.saves) && data.saves.length) { render.live = true; render(data.saves); return; }
+    }
+  } catch (e) { /* file:// — 스냅샷 사용 */ }
+  render(LEVELS);
+})();
+</script>
+</body>
+</html>

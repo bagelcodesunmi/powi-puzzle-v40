@@ -29,9 +29,10 @@
 
 | 목적 | 사용할 도구 |
 |------|------------|
-| 레벨 편집 (단일 소스) | `Level/levels.json` → `node sync-levels.js`로 게임·툴 반영 |
+| 레벨 편집 (단일 소스) | `Level/levels.json` → `node sync-levels.js`로 게임·툴·감정곡선 반영 |
 | 레벨 설계·검증 GUI (edge wall 포함) | `level-lab.html` (브라우저) |
 | 게임 플레이 확인 | `powi-puzzle.html` (브라우저) |
+| 난이도·감정 페이싱 확인 | `emotion-curve.html` (브라우저) — 예산 계단·예고봇 승률·감정 구간(도파민/스트레스/학습/전환점)을 json에서 자동 렌더링. 감정 태그는 json의 `emotion`/`tag`/`winRate` 필드로 편집 |
 | Edge wall 레벨 검증 절차 | `level-lab.html` 솔버 + `v43-edge-wall-guide.md` §14 체크리스트 |
 | edge wall 없는 구 레벨 검증·시드 선별 | `archive/solver-v40.js`, `archive/seed-validator.js` |
 | 구버전 예산 스캔·레벨 탐색 | `archive/` 폴더 참조 (budget-scan*, find-*) |
