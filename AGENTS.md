@@ -5,7 +5,7 @@
 - **본질 기준**: 이 게임은 퍼즐 게임이다. 판 읽기, 수순 설계, 공간 제어, 포위 메커닉 이해를 우선한다.
 - **플랫폼/표현 기준**: HTML 기반 2D 게임이다. 모든 기믹과 연출은 HTML 2D에서 명확하게 보이고 조작 가능해야 한다.
 - **최적화 기준**: 새 기믹이나 표현을 검토할 때는 항상 성능/복잡도 대비 가치, 렌더링 비용, 계산량을 함께 본다.
-- **현재 게임**: `powi-puzzle-v43-edge-test.html` (edge wall 기반, 레벨 소스는 `Level/level-lab-v2-saves.json`)
+- **현재 게임**: `powi-puzzle.html` (edge wall 기반, 레벨 소스는 `Level/levels.json`)
 - 구 빌드(`포위퍼즐-v41.html` 메인 안정판, `powi-puzzle-v43.html` 뼈대)는 `폐기/`로 이동 (2026-07-18)
 - **작업 경로**: `~/Desktop/game-planning/포위퍼즐-v40/`
 
@@ -24,8 +24,8 @@
 - 변경 전 확인은 `문서/change-checklist.md` 템플릿을 사용한다.
 
 ## 레벨 구조
-- **레벨 소스(단일)**: `Level/level-lab-v2-saves.json` — 편집 후 `node sync-levels.js`로 게임·툴에 반영 (`문서/tools.md` 참조)
-- `level-lab-v4.html` — 레벨 설계 & 검증 GUI 도구 (edge wall 배치·솔버·시드 뽑기·예산 지정 지원)
+- **레벨 소스(단일)**: `Level/levels.json` — 편집 후 `node sync-levels.js`로 게임·툴에 반영 (`문서/tools.md` 참조)
+- `level-lab.html` — 레벨 설계 & 검증 GUI 도구 (edge wall 배치·솔버·시드 뽑기·예산 지정 지원)
 - 현재 게임에서 안 쓰는 것들은 전부 `폐기/`로 이동: 구 도구·탐색 스크립트(budget-scan, find-*, solver-v40.js, seed-validator.js — edge wall 미지원), 구 프로토타입(v40~v42, v43 뼈대, v41 메인 안정판), `레벨-감정곡선.html`(구 15레벨 기준 시각화)
 
 ## 현재 방향 (승인된 결정)

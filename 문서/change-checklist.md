@@ -65,7 +65,7 @@
 ### 5. 실험 범위
 - 어디까지가 실험이고, 어디는 손대지 않는가?
 - 예:
-  - `powi-puzzle-v43-edge-test.html`에서만 실험
+  - `powi-puzzle.html`에서만 실험
   - L1만 수정
   - L2/L3는 그대로 유지
 

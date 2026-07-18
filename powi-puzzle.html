@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>포위 퍼즐 통합 빌드 v43-edge-test (edge wall 실험)</title>
+<title>포위 퍼즐</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   html, body { height:100%; overflow:hidden; background:#1b1b1f; touch-action:none; }
@@ -42,7 +42,7 @@
   </div>
 
 <script>
-// ═════ 포위 퍼즐 v43-edge-test — edge wall 전용 실험 ═════
+// ═════ 포위 퍼즐 — 현재 게임 (edge wall 기반, 레벨 소스: Level/levels.json) ═════
 // 배치: 빈칸 어디든 탭 1회 = 돌 1개(내구도 2). 1:1 고정 턴 (내 배치 1 ↔ 적 턴 1).
 // 포획: 적 영역의 빈칸이 0(완전 밀폐)이 되면, 영역에 인접한 각 벽이 화살 1발씩 발사.
 //       벽은 자기와 붙은 적을 최대 매칭으로 조준 — 벽당 1킬.
@@ -60,7 +60,7 @@
 //              → v33 전투 매칭·화살 대칭화 → v34 포획 총격전 → v35 매 턴 공격 폐지 → v36 내구도 2·좌상단 발사·반격 밀폐 한정·레벨 재편 → v37 유예 판정 → v39 손상 표현 제거 → v40 전면 내구도 1 (반격 1발 = 벽 파괴) + 14 단일 적 교체.
 // ─── 삭제된 시스템: 머지, 영토(자동 벽·틴트·배치 금지), 열매·아이템, 별점.
 const LEVELS = [
-  // ▼ AUTO-GENERATED — Level/level-lab-v2-saves.json 에서 생성됨. 직접 편집 금지. 재생성: node sync-levels.js
+  // ▼ AUTO-GENERATED — Level/levels.json 에서 생성됨. 직접 편집 금지. 재생성: node sync-levels.js
   { board: 3, enemies: [[1,1]], rightWalls: [[0,1],[1,1]], downWalls: [[1,0]], schedule: [1], spread: true, combat: false, min: 1, exactBudget: true, seeds: [100001] }, // 1 edge wall 튜토리얼: 아래 1면만 열고 막기
   { board: 3, enemies: [[1,0]], rightWalls: [[1,0]], schedule: [1,1], spread: true, combat: false, min: 2, exactBudget: true, seeds: [200001] }, // 2 edge wall 반응 실험
   { board: 4, enemies: [[1,2]], rightWalls: [[0,2]], downWalls: [[1,1]], schedule: [1,1,1], spread: true, combat: false, min: 3, exactBudget: true, seeds: [300001,300002,300003] }, // 3 4x4 edge wall 힌트: 적 (1,2) 왼면+윗면 벽 주머니 — 최악=최선=3턴 검증
