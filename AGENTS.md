@@ -27,7 +27,7 @@
 - **레벨 소스(단일)**: `Level/levels.json` — 편집 후 `node sync-levels.js`로 게임·툴에 반영 (`docs/tools.md` 참조)
 - `level-lab.html` — 레벨 설계 & 검증 GUI 도구 (edge wall 배치·솔버·시드 뽑기·예산 지정·게임 파일 직접 저장 지원)
 - `emotion-curve.html` — 난이도·감정 페이싱 시각화 (levels.json 자동 렌더링 — 감정 태그는 json의 emotion/tag/winRate 필드)
-- **신규 레벨은 카탈로그에서 시작**: `Catalog/catalog-viewer.html`(더블클릭 지원) + `catalog-walls.js` —
+- **신규 레벨은 카탈로그에서 시작**: `catalog-viewer.html`(루트, 더블클릭 지원 — 데이터는 Catalog/) + `catalog-walls.js` —
   적1+벽≤1 전 배치의 min·예고봇 승률 전수 계산 DB. 워크플로·구조적 결론은 `docs/catalog-guide.md` 참조.
 - 현재 게임에서 안 쓰는 것들은 전부 `archive/`로 이동: 구 도구·탐색 스크립트(budget-scan, find-*, solver-v40.js, seed-validator.js — edge wall 미지원), 구 프로토타입(v40~v42, v43 뼈대, v41 메인 안정판), `레벨-감정곡선.html`(구 15레벨 기준 시각화)
 
