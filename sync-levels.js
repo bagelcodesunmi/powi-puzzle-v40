@@ -55,9 +55,15 @@ function gameLine(s) {
 }
 
 // ── 툴 PRESETS 라인 (배치·기하만, 게임 필드 제외) ──
+const foeObj = a => '[' + (a || []).map(e => {
+  let s = `{ x: ${e.x}, y: ${e.y}`;
+  if (e.hp === 2) s += ', hp: 2';
+  if (e.combat !== undefined) s += `, combat: ${!!e.combat}`;
+  return s + ' }';
+}).join(', ') + ']';
 function presetLine(s) {
   return `  { name: '${s.name}', board: ${s.board}, combat: ${!!s.combat}, hp: ${s.hp || 1}, mirror: ${s.mirror !== false}, ` +
-    `enemies: ${xyObj(s.enemies)}, walls: [${(s.walls || []).map(w => `{ x: ${w.x}, y: ${w.y}, hp: ${w.hp} }`).join(', ')}], ` +
+    `enemies: ${foeObj(s.enemies)}, walls: [${(s.walls || []).map(w => `{ x: ${w.x}, y: ${w.y}, hp: ${w.hp} }`).join(', ')}], ` +
     `rightWalls: ${xyObj(s.rightWalls)}, downWalls: ${xyObj(s.downWalls)} },`;
 }
 

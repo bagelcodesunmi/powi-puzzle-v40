@@ -158,6 +158,12 @@
     <div class="seg" id="hpSeg">
       <button data-p="1" class="on">내구도 1</button><button data-p="2">내구도 2</button>
     </div>
+    <div class="seg" id="foeHpSeg">
+      <button data-fh="1" class="on">적 hp1</button><button data-fh="2">적 hp2</button>
+    </div>
+    <div class="seg" id="foeCbSeg">
+      <button data-fc="d" class="on">속성 기본</button><button data-fc="0">비전투</button><button data-fc="1">전투</button>
+    </div>
     <div class="seg" id="wallSeg" style="display:none">
       <button data-h="1" class="on">HP1</button><button data-h="2">HP2</button>
     </div>
@@ -726,7 +732,8 @@ let N = 4, combat = false, stoneHp = 1;
 let mirror = true;                        // false = mirror: false 레벨 (미러링 없이 항상 원좌표 — 튜토리얼 고정 방향)
 let budgetMode = 'auto';                  // 'auto' = 솔버 min · 'manual' = 사용자가 예산 직접 지정
 let mode = 'enemy', curWallHp = 1;        // 배치 대상: 'enemy' | 'rwall' | 'dwall' | 'wall'
-let enemies = [];      // {x, y}
+let foeHp = 1, foeCb = 'd';               // [적 개체화] 배치할 적 속성: hp 1|2, combat 'd'(레벨 기본)|'0'|'1'
+let enemies = [];      // {x, y, hp?, combat?} — hp/combat 생략 시 레벨 기본
 let walls = [];        // {x, y, hp} — 칸 점유 돌벽 (구형)
 let rightWalls = [];   // {x, y} — (x,y)↔(x+1,y) 경계벽
 let downWalls = [];    // {x, y} — (x,y)↔(x,y+1) 경계벽
@@ -746,7 +753,12 @@ function renderBoard() {
     d.className = 'cell';
     const e = enemies.find(e => e.x === x && e.y === y);
     const w = walls.find(w => w.x === x && w.y === y);
-    if (e) { d.classList.add('enemy'); d.textContent = '적'; }
+    if (e) {
+      d.classList.add('enemy');
+      d.textContent = e.hp === 2 ? '적2' : '적';
+      if (e.combat === true || (e.combat === undefined && combat)) d.style.background = '#8e44ad';   // 전투 속성 = 보라
+      if (e.combat === false && combat) d.style.opacity = '0.75';   // 전투 레벨 속 비전투 개체 표시
+    }
     else if (w) { d.classList.add('wall'); d.textContent = w.hp; }
     d.onclick = () => {
       if (mode === 'rwall') {                                   // 경계벽: 탭한 칸의 오른쪽 경계 토글
@@ -761,7 +773,12 @@ function renderBoard() {
       const wi = walls.findIndex(w => w.x === x && w.y === y);
       if (ei >= 0) enemies.splice(ei, 1);                       // 탭: 제거 (적)
       else if (wi >= 0) walls.splice(wi, 1);                    // 탭: 제거 (벽)
-      else if (mode === 'enemy') enemies.push({ x, y });
+      else if (mode === 'enemy') {
+        const e = { x, y };
+        if (foeHp === 2) e.hp = 2;                              // [적 개체화] 선택한 속성으로 배치
+        if (foeCb !== 'd') e.combat = foeCb === '1';
+        enemies.push(e);
+      }
       else walls.push({ x, y, hp: curWallHp });                 // 돌벽 모드: 선택 HP로 배치
       renderBoard();
     };
@@ -825,16 +842,28 @@ document.getElementById('clearBtn').onclick = () => { enemies = []; walls = []; 
 
 // ---------- 배치 모드 ----------
 const PLACE_HINT = {
-  enemy: '칸을 탭하면 적 배치, 다시 탭하면 제거 · 내구도는 내가 놓는 돌의 체력 (게임의 hp 플래그)',
+  enemy: '칸을 탭하면 적 배치, 다시 탭하면 제거 · 내구도 = 내 돌 체력 · 적 hp2 = 밀폐 순간 공격수 2(연타) 필요 · 속성 = 개체별 반격 여부(기본 = 레벨 전투 설정)',
   rwall: '경계벽(세로) — 칸을 탭하면 그 칸의 오른쪽 경계에 벽 토글. 칸을 점유하지 않고 연결/확산/공격을 막습니다',
   dwall: '경계벽(가로) — 칸을 탭하면 그 칸의 아래 경계에 벽 토글. 놓인 벽을 직접 탭해도 제거됩니다',
   wall: '칸 점유 돌벽(구형) — HP를 고르고 칸을 탭하세요. 반격 화살 1발당 1씩 깎입니다 (0 = 파괴)',
 };
 function syncModeUI() {
   document.getElementById('hpSeg').style.display = mode === 'enemy' ? '' : 'none';
+  document.getElementById('foeHpSeg').style.display = mode === 'enemy' ? '' : 'none';
+  document.getElementById('foeCbSeg').style.display = mode === 'enemy' ? '' : 'none';
   document.getElementById('wallSeg').style.display = mode === 'wall' ? '' : 'none';
   document.getElementById('placeHint').textContent = PLACE_HINT[mode];
 }
+document.getElementById('foeHpSeg').onclick = e => {
+  if (!e.target.dataset.fh) return;
+  foeHp = +e.target.dataset.fh;
+  [...e.currentTarget.children].forEach(b => b.classList.toggle('on', b === e.target));
+};
+document.getElementById('foeCbSeg').onclick = e => {
+  if (!e.target.dataset.fc) return;
+  foeCb = e.target.dataset.fc;
+  [...e.currentTarget.children].forEach(b => b.classList.toggle('on', b === e.target));
+};
 document.getElementById('modeSeg').onclick = e => {
   if (!e.target.dataset.m) return;
   mode = e.target.dataset.m;
@@ -906,7 +935,12 @@ function persist() {
 function migrate(s) {  // 구버전(성향·요새화·열매·HP3) 저장 호환: 폐기 필드 제거, 값 보정
   if (!s || typeof s !== 'object') return s;
   const out = { name: s.name, board: s.board, combat: !!s.combat, hp: [1, 2].includes(s.hp) ? s.hp : 1, savedAt: s.savedAt || Date.now() };
-  out.enemies = Array.isArray(s.enemies) ? s.enemies.map(e => ({ x: e.x, y: e.y })) : [];
+  out.enemies = Array.isArray(s.enemies) ? s.enemies.map(e => {
+    const o = { x: e.x, y: e.y };
+    if (e.hp === 2) o.hp = 2;                                    // [적 개체화] hp2·개체 combat 속성 보존
+    if (typeof e.combat === 'boolean') o.combat = e.combat;
+    return o;
+  }) : [];
   out.walls = Array.isArray(s.walls) ? s.walls.map(w => ({ x: w.x, y: w.y, hp: Math.min(2, Math.max(1, w.hp | 0)) })) : [];
   out.rightWalls = Array.isArray(s.rightWalls) ? s.rightWalls.map(w => ({ x: w.x, y: w.y })) : [];
   out.downWalls = Array.isArray(s.downWalls) ? s.downWalls.map(w => ({ x: w.x, y: w.y })) : [];
@@ -1130,8 +1164,15 @@ function killWorker() {
   if (workerUrl) { URL.revokeObjectURL(workerUrl); workerUrl = null; }
 }
 
+// 적 → 워커/게임 배열형: [x,y] | [x,y,hp] | [x,y,hp,combat(0/1)]
+function foeTuple(e) {
+  if (e.hp !== 2 && e.combat === undefined) return [e.x, e.y];
+  const t = [e.x, e.y, e.hp === 2 ? 2 : 1];
+  if (e.combat !== undefined) t.push(e.combat ? 1 : 0);
+  return t;
+}
 function makeCfg() {
-  const cfg = { board: N, combat, hp: stoneHp, enemies: enemies.map(e => [e.x, e.y]) };
+  const cfg = { board: N, combat, hp: stoneHp, enemies: enemies.map(foeTuple) };
   if (walls.length) cfg.walls = walls.map(w => [w.x, w.y, w.hp]);
   if (rightWalls.length) cfg.rightWalls = rightWalls.map(w => [w.x, w.y]);
   if (downWalls.length) cfg.downWalls = downWalls.map(w => [w.x, w.y]);
@@ -1173,7 +1214,7 @@ stopBtn.onclick = () => {
 let batchStop = false, workerResolve = null;
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 function buildCfg(s) {
-  const cfg = { board: s.board, combat: s.combat, hp: s.hp || 1, enemies: s.enemies.map(e => [e.x, e.y]) };
+  const cfg = { board: s.board, combat: s.combat, hp: s.hp || 1, enemies: s.enemies.map(foeTuple) };
   if (s.walls && s.walls.length) cfg.walls = s.walls.map(w => [w.x, w.y, w.hp]);
   if (s.rightWalls && s.rightWalls.length) cfg.rightWalls = s.rightWalls.map(w => [w.x, w.y]);
   if (s.downWalls && s.downWalls.length) cfg.downWalls = s.downWalls.map(w => [w.x, w.y]);
