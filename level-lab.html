@@ -123,7 +123,7 @@
       <li><b>v43 edge wall 원칙</b>: 벽은 칸을 점유하지 않고 칸과 칸 사이 경계에 놓입니다. 1레벨은 마지막 1면 닫기, 2레벨은 닫는 면 읽기, 3레벨은 4×4 자립 시작을 목표로 합니다.</li>
       <li><b>벽의 역할</b>: v43의 벽은 edge wall입니다. 셀 내부 블록이 아니라 연결/확산/공격을 막는 경계선이며, 초반 1~3레벨에서는 장애물보다 가이드로 우선 사용합니다.</li>
       <li><b>보드 크기</b>와 <b>전투</b> 여부를 고릅니다. 전투를 켜면 포위 순간 적 전원이 반격 화살을 쏩니다.</li>
-      <li><b>내구도</b>는 내 돌의 체력입니다. 기본 1(반격 1발 = 파괴), 2기 레벨 등 특수판만 2를 씁니다.</li>
+      <li><b>HP</b>는 체력입니다. 내 돌 HP는 항상 1(반격 1발 = 파괴 — 상승은 추후 아이템), 적 HP 2는 밀폐 순간 공격수 2(연타)가 필요합니다.</li>
       <li>보드의 칸을 탭해 적을 놓습니다. 다시 탭하면 지워집니다. <b>경계벽 ▏/▁</b> 모드에서는 탭한 칸의 오른쪽/아래 경계에 edge wall을 토글하고(놓인 벽을 직접 탭해도 제거), <b>돌벽</b> 모드에서는 칸을 점유하는 구형 벽(HP 1~2)을 배치합니다.</li>
       <li><b>미러링 선택</b>: 게임은 시드에 따라 보드를 좌우/상하 반전합니다(재도전 다양성). <b>미러링/방향 고정</b> 토글로 레벨별로 켜고 끌 수 있고, 끄면 <code>mirror: false</code>가 레벨 데이터에 포함돼 게임에서도 항상 고정 방향으로 나옵니다. 시드 뽑기는 이 설정 그대로(edge wall 반전 포함) 계산합니다.</li>
       <li><b>초심자 첫 시선·첫 터치</b>: 초반 1~3레벨은 정답 구조뿐 아니라 처음 보는 사람이 어디를 먼저 누를지도 함께 검토하세요. 모바일 시선은 중앙에서 아래로 흐르므로, 같은 논리라면 "위를 막기"보다 "아래를 두기"가 직관적입니다. 방향이 중요한 튜토리얼은 <b>방향 고정</b>을 권장합니다.</li>
@@ -155,11 +155,12 @@
       <button data-m="dwall">경계벽 ▁</button>
       <button data-m="wall">돌벽</button>
     </div>
-    <div class="seg" id="hpSeg">
-      <button data-p="1" class="on">내 돌 내구도 1</button><button data-p="2">내 돌 내구도 2</button>
+    <!-- 내 돌 HP 선택기: 항상 1 고정 (2026-07-19 Director — HP 상승은 추후 아이템 시스템으로). 엔진·데이터 호환은 유지 -->
+    <div class="seg" id="hpSeg" style="display:none">
+      <button data-p="1" class="on">내 돌 HP 1</button><button data-p="2">내 돌 HP 2</button>
     </div>
     <div class="seg" id="foeHpSeg">
-      <button data-fh="1" class="on">적 내구도 1</button><button data-fh="2">적 내구도 2</button>
+      <button data-fh="1" class="on">적 HP 1</button><button data-fh="2">적 HP 2</button>
     </div>
     <div class="seg" id="foeCbSeg">
       <button data-fc="d" class="on">적 속성 기본</button><button data-fc="0">비전투</button><button data-fc="1">전투</button>
@@ -168,10 +169,10 @@
       <button data-h="1" class="on">HP1</button><button data-h="2">HP2</button>
     </div>
   </div>
-  <div class="hint" id="placeHint">칸을 탭하면 적 배치, 다시 탭하면 제거 · 내구도는 내가 놓는 돌의 체력 (게임의 hp 플래그)</div>
+  <div class="hint" id="placeHint">칸을 탭하면 적 배치, 다시 탭하면 제거 · 내 돌 HP는 1 고정(상승은 추후 아이템) · 적 HP 2 = 밀폐 순간 공격수 2(연타) 필요</div>
 
   <div id="boardWrap"><div id="board"></div></div>
-  <div class="hint">⚠️ 확산형 2기 이상은 내구도 1에서 발산(클리어 불가)이 검증돼 있습니다 — 2기는 내구도 2로 검토하세요</div>
+  <div class="hint">⚠️ 확산형 2기 이상은 돌 HP 1에서 발산(클리어 불가)이 검증돼 있습니다 — 2기 배치는 구조(벽·코너)로 풀거나 적 HP·속성 조합을 검토하세요</div>
 
   <div class="row">
     <div class="seg" id="budgetSeg">
@@ -705,7 +706,7 @@ self.onmessage = e => {
       const solverCap = Math.max(cap, ub || 0);
       const r = solveMin(cfg, solverCap, (n, k) => P('솔버 탐색 중… ' + (k ? '예산 ' + k + ' · ' : '') + (n / 1000 | 0) + 'k 상태'));
       const usedBudget = ub || r.min;
-      if (usedBudget === null) { self.postMessage({ type: 'done', fail: '예산 ' + solverCap + ' 이내 클리어 불가 (발산 가능성 — 2기 확산+내구도 1 조합인지 확인)' }); return; }
+      if (usedBudget === null) { self.postMessage({ type: 'done', fail: '예산 ' + solverCap + ' 이내 클리어 불가 (발산 가능성 — 2기 확산+돌 HP 1 조합인지 확인)' }); return; }
       P((ub ? '지정 예산 ' + ub : '최소 턴 ' + r.min + ' 확정') + ' — 봇 승률 측정 시작');
       // mcMin: 진짜 min에서의 승률 (일괄 검토에서 설정 예산과 함께 비교용). mc: 실제 사용 예산에서의 승률.
       const mcMin = r.min != null ? mcStats(cfg, r.min, runs, mcP('예고봇 측정(min ' + r.min + ')')) : null;
@@ -842,13 +843,13 @@ document.getElementById('clearBtn').onclick = () => { enemies = []; walls = []; 
 
 // ---------- 배치 모드 ----------
 const PLACE_HINT = {
-  enemy: '칸을 탭하면 적 배치, 다시 탭하면 제거 · 내 돌 내구도 = 반격 몇 발에 깨지는가(레벨 hp 플래그) · 적 내구도 2 = 밀폐 순간 공격수 2(연타) 필요 · 적 속성 = 개체별 반격 여부(기본 = 레벨 전투 설정)',
+  enemy: '칸을 탭하면 적 배치, 다시 탭하면 제거 · 내 돌 HP는 1 고정(상승은 추후 아이템) · 적 HP 2 = 밀폐 순간 공격수 2(연타) 필요 · 적 속성 = 개체별 반격 여부(기본 = 레벨 전투 설정)',
   rwall: '경계벽(세로) — 칸을 탭하면 그 칸의 오른쪽 경계에 벽 토글. 칸을 점유하지 않고 연결/확산/공격을 막습니다',
   dwall: '경계벽(가로) — 칸을 탭하면 그 칸의 아래 경계에 벽 토글. 놓인 벽을 직접 탭해도 제거됩니다',
   wall: '칸 점유 돌벽(구형) — HP를 고르고 칸을 탭하세요. 반격 화살 1발당 1씩 깎입니다 (0 = 파괴)',
 };
 function syncModeUI() {
-  document.getElementById('hpSeg').style.display = mode === 'enemy' ? '' : 'none';
+  // hpSeg(내 돌 HP)는 항상 숨김 — 돌 HP는 1 고정 (Director 2026-07-19, 상승은 추후 아이템 시스템)
   document.getElementById('foeHpSeg').style.display = mode === 'enemy' ? '' : 'none';
   document.getElementById('foeCbSeg').style.display = mode === 'enemy' ? '' : 'none';
   document.getElementById('wallSeg').style.display = mode === 'wall' ? '' : 'none';
