@@ -100,10 +100,29 @@ async function loadAll() {
     else if (SNAPSHOT[n]) { CATS[n] = normalize(SNAPSHOT[n].entries); usedSnapshot = true; }
   }
   if (Object.keys(CATS).length === 0) {
+    const noSnapFile = typeof CATALOG_SNAPSHOT === 'undefined';
     $('err').style.display = 'block';
-    $('err').innerHTML = 'catalog 데이터가 없습니다. <code>node catalog-walls.js --build 4</code> 등으로 생성한 뒤 ' +
-      '<code>node catalog-walls.js --sync-viewer</code>를 실행하면 더블클릭(file://)으로도 열립니다.<br>' +
-      '서버(localhost/미리보기)로 열면 <code>Level/catalog-b*.json</code>을 실시간으로 읽습니다.';
+    $('err').innerHTML = (noSnapFile
+      ? '<b>catalog-snapshot.js를 찾지 못했습니다.</b> 이 파일은 <code>catalog-viewer.html</code>과 <b>같은 폴더</b>에 있어야 합니다 — ' +
+        '뷰어를 복사했다면 두 파일을 함께 옮기세요. (프로젝트 폴더에서 <code>node catalog-walls.js --sync-viewer</code>로 재생성 가능)'
+      : 'catalog 데이터가 없습니다. <code>node catalog-walls.js --build 4</code> 등으로 생성한 뒤 ' +
+        '<code>node catalog-walls.js --sync-viewer</code>를 실행하세요. 서버(localhost/미리보기)로 열면 <code>Level/catalog-b*.json</code>을 실시간으로 읽습니다.') +
+      '<div style="margin-top:10px">또는 카탈로그 json을 직접 열기: <input type="file" id="pick" accept=".json" multiple style="font-size:12px"> ' +
+      '<span style="color:#8a877e">(Level/catalog-b*.json 파일들을 선택 — 창에 드래그해도 됩니다)</span></div>';
+    const ingest = async files => {
+      for (const f of files) {
+        try {
+          const cat = JSON.parse(await f.text());
+          const n = cat.board || (cat.entries && cat.entries[0] && cat.entries[0].board);
+          if (!n) continue;
+          CATS[n] = normalize([...(CATS[n] || []), ...cat.entries]);
+        } catch (e) { /* json 아님 — 무시 */ }
+      }
+      if (Object.keys(CATS).length) { $('err').style.display = 'none'; render(); }
+    };
+    $('pick').addEventListener('change', ev => ingest([...ev.target.files]));
+    document.body.addEventListener('dragover', ev => ev.preventDefault());
+    document.body.addEventListener('drop', ev => { ev.preventDefault(); ingest([...ev.dataTransfer.files]); });
     return;
   }
   if (usedSnapshot) {
