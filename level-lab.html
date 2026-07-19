@@ -802,8 +802,14 @@ const PRESETS = [
   { name: 'Game L2', board: 3, combat: false, hp: 1, mirror: false, enemies: [{ x: 1, y: 0 }], walls: [], rightWalls: [{ x: 1, y: 0 }], downWalls: [] },
   { name: 'Game L3', board: 4, combat: false, hp: 1, mirror: false, enemies: [{ x: 1, y: 2 }], walls: [], rightWalls: [{ x: 0, y: 2 }], downWalls: [{ x: 1, y: 1 }] },
   { name: 'Game L4', board: 4, combat: false, hp: 1, mirror: false, enemies: [{ x: 0, y: 0 }, { x: 2, y: 0 }], walls: [], rightWalls: [{ x: 2, y: 0 }], downWalls: [{ x: 2, y: 0 }] },
+  { name: 'Game L5', board: 5, combat: false, hp: 1, mirror: true, enemies: [{ x: 1, y: 3 }], walls: [], rightWalls: [{ x: 0, y: 3 }], downWalls: [{ x: 1, y: 2 }] },
+  { name: 'Game L6', board: 5, combat: true, hp: 1, mirror: false, enemies: [{ x: 2, y: 2 }], walls: [], rightWalls: [{ x: 1, y: 2 }, { x: 2, y: 2 }], downWalls: [{ x: 2, y: 1 }] },
+  { name: 'Game L7', board: 5, combat: true, hp: 1, mirror: true, enemies: [{ x: 1, y: 0 }], walls: [], rightWalls: [{ x: 1, y: 0 }], downWalls: [] },
+  { name: 'Game L8', board: 5, combat: true, hp: 1, mirror: true, enemies: [{ x: 1, y: 3 }], walls: [], rightWalls: [{ x: 0, y: 3 }], downWalls: [{ x: 1, y: 2 }] },
+  { name: 'Game L9', board: 5, combat: true, hp: 1, mirror: true, enemies: [{ x: 1, y: 3 }], walls: [], rightWalls: [], downWalls: [{ x: 1, y: 2 }] },
+  { name: 'Game L10', board: 5, combat: true, hp: 1, mirror: true, enemies: [{ x: 1, y: 2 }], walls: [], rightWalls: [], downWalls: [{ x: 1, y: 2 }] },
 ];
-const PRESET_VER = 12;              // 프리셋 추가/변경 시 +1 — 기존 사용자에게도 새 프리셋이 1회 주입된다
+const PRESET_VER = 14;              // 프리셋 추가/변경 시 +1 — 기존 사용자에게도 새 프리셋이 1회 주입된다
 let presetVer = 0;
 function seedPresets() {
   // 버전 올라가면 프리셋(게임 레벨 사본)을 최신 데이터로 갱신 — 이름 일치 항목은 덮어쓰고, 없으면 맨 앞에 추가.
