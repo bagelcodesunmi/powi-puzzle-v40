@@ -156,13 +156,13 @@
       <button data-m="wall">돌벽</button>
     </div>
     <div class="seg" id="hpSeg">
-      <button data-p="1" class="on">내구도 1</button><button data-p="2">내구도 2</button>
+      <button data-p="1" class="on">내 돌 내구도 1</button><button data-p="2">내 돌 내구도 2</button>
     </div>
     <div class="seg" id="foeHpSeg">
-      <button data-fh="1" class="on">적 hp1</button><button data-fh="2">적 hp2</button>
+      <button data-fh="1" class="on">적 내구도 1</button><button data-fh="2">적 내구도 2</button>
     </div>
     <div class="seg" id="foeCbSeg">
-      <button data-fc="d" class="on">속성 기본</button><button data-fc="0">비전투</button><button data-fc="1">전투</button>
+      <button data-fc="d" class="on">적 속성 기본</button><button data-fc="0">비전투</button><button data-fc="1">전투</button>
     </div>
     <div class="seg" id="wallSeg" style="display:none">
       <button data-h="1" class="on">HP1</button><button data-h="2">HP2</button>
@@ -842,7 +842,7 @@ document.getElementById('clearBtn').onclick = () => { enemies = []; walls = []; 
 
 // ---------- 배치 모드 ----------
 const PLACE_HINT = {
-  enemy: '칸을 탭하면 적 배치, 다시 탭하면 제거 · 내구도 = 내 돌 체력 · 적 hp2 = 밀폐 순간 공격수 2(연타) 필요 · 속성 = 개체별 반격 여부(기본 = 레벨 전투 설정)',
+  enemy: '칸을 탭하면 적 배치, 다시 탭하면 제거 · 내 돌 내구도 = 반격 몇 발에 깨지는가(레벨 hp 플래그) · 적 내구도 2 = 밀폐 순간 공격수 2(연타) 필요 · 적 속성 = 개체별 반격 여부(기본 = 레벨 전투 설정)',
   rwall: '경계벽(세로) — 칸을 탭하면 그 칸의 오른쪽 경계에 벽 토글. 칸을 점유하지 않고 연결/확산/공격을 막습니다',
   dwall: '경계벽(가로) — 칸을 탭하면 그 칸의 아래 경계에 벽 토글. 놓인 벽을 직접 탭해도 제거됩니다',
   wall: '칸 점유 돌벽(구형) — HP를 고르고 칸을 탭하세요. 반격 화살 1발당 1씩 깎입니다 (0 = 파괴)',
