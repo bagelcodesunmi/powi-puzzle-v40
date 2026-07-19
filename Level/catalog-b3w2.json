@@ -1,0 +1,4376 @@
+{
+ "board": 3,
+ "cap": 20,
+ "runs": 800,
+ "builtAt": "2026-07-19T06:38:54.116Z",
+ "entries": [
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 0,
+   "botMedian": null
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 48.6,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 49.3,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 0,
+   "botMedian": null
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 26.8,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 74,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 80.4,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 55,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 52,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 25.5,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 27.1,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 64.3,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 45.4,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 79.3,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 22.1,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 2,
+   "shieldedCorner": false,
+   "bot": 11.6,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 13.5,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 81.1,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 65.4,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 60.1,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 88.5,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 13.3,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 28.9,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "r",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 88.6,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "r",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 86,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 5,
+   "cap": 20,
+   "solveMs": 2,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 4
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 68.3,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 4,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 71.1,
+   "botMedian": 4
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    }
+   ],
+   "min": 4,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 68.1,
+   "botMedian": 4
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    }
+   ],
+   "min": 4,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 72.6,
+   "botMedian": 4
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    }
+   ],
+   "min": 4,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 64.1,
+   "botMedian": 4
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 4,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 81.5,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 4,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 36.1,
+   "botMedian": 4
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 49.1,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 5,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 87.8,
+   "botMedian": 4
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": false,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 50.4,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 0,
+   "botMedian": null
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": true,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 83.5,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 50,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 50.2,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 0,
+   "botMedian": null
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 25.6,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    0
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 74.8,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 1,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 1
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 87.8,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 78.1,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 52.4,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 50.6,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 11,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 7,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 76.9,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 47.1,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 80.5,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 23.3,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 0,
+   "botMedian": null
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 0,
+   "botMedian": null
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 76.5,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 66.9,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 61.4,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 71,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 5,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 0,
+   "botMedian": null
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 0,
+   "botMedian": null
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 10.3,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 74.4,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 2,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 2
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "r",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 89,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    0,
+    1
+   ],
+   "walls": [
+    {
+     "type": "r",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 89,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 5,
+   "cap": 20,
+   "solveMs": 3,
+   "shieldedCorner": false,
+   "bot": 82.9,
+   "botMedian": 4
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 64.6,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 4,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 23,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 0
+    }
+   ],
+   "min": 5,
+   "cap": 20,
+   "solveMs": 2,
+   "shieldedCorner": false,
+   "bot": 50.7,
+   "botMedian": 5
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 2,
+     "y": 1
+    }
+   ],
+   "min": 4,
+   "cap": 20,
+   "solveMs": 2,
+   "shieldedCorner": false,
+   "bot": 0,
+   "botMedian": null
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 0
+    }
+   ],
+   "min": 4,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 7,
+   "botMedian": 4
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 4,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 78.6,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 2
+    }
+   ],
+   "min": 4,
+   "cap": 20,
+   "solveMs": 2,
+   "shieldedCorner": false,
+   "bot": 5.1,
+   "botMedian": 4
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 1,
+   "shieldedCorner": false,
+   "bot": 47.4,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 0,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 1,
+     "y": 2
+    }
+   ],
+   "min": 5,
+   "cap": 20,
+   "solveMs": 2,
+   "shieldedCorner": false,
+   "bot": 10.6,
+   "botMedian": 4
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "d",
+     "x": 1,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 100,
+   "botMedian": 3
+  },
+  {
+   "board": 3,
+   "combat": true,
+   "enemy": [
+    1,
+    1
+   ],
+   "walls": [
+    {
+     "type": "d",
+     "x": 1,
+     "y": 0
+    },
+    {
+     "type": "r",
+     "x": 0,
+     "y": 1
+    }
+   ],
+   "min": 3,
+   "cap": 20,
+   "solveMs": 0,
+   "shieldedCorner": false,
+   "bot": 50.9,
+   "botMedian": 3
+  }
+ ]
+}

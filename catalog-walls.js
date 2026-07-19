@@ -29,10 +29,19 @@ function syncViewer() {
   if (!fs.existsSync(VIEWER)) return;
   const snap = { builtAt: new Date().toISOString() };
   for (const f of fs.readdirSync(path.join(ROOT, 'Level'))) {
-    const m2 = f.match(/^catalog-b(\d+)\.json$/);
+    const m2 = f.match(/^catalog-b(\d+)(w2)?\.json$/);
     if (!m2) continue;
     const cat = JSON.parse(fs.readFileSync(path.join(ROOT, 'Level', f), 'utf8'));
-    snap[m2[1]] = { cap: cat.cap, runs: cat.runs, entries: cat.entries };
+    if (!snap[m2[1]]) snap[m2[1]] = { cap: cat.cap, runs: cat.runs, entries: [] };
+    // 스냅샷은 뷰어 표시에 필요한 필드만 (solveMs·cap 제외 — 파일 크기 절약)
+    snap[m2[1]].entries.push(...cat.entries.map(r => {
+      const o = { board: r.board, combat: r.combat, enemy: r.enemy, min: r.min };
+      if (r.walls) o.walls = r.walls; else if (r.wall) o.wall = r.wall;
+      if (r.bot !== undefined) { o.bot = r.bot; o.botMedian = r.botMedian; }
+      if (r.shieldedCorner) o.shieldedCorner = true;
+      if (r.timedOut) o.timedOut = true;
+      return o;
+    }));   // 벽1(b{N})·벽2(b{N}w2) 병합
   }
   let html = fs.readFileSync(VIEWER, 'utf8');
   const re = /(\/\/ ▼ SNAPSHOT-BEGIN[^\n]*\n)[\s\S]*?(\n\/\/ ▲ SNAPSHOT-END)/;
@@ -55,30 +64,32 @@ function transforms(N) {
       });
   return t;
 }
-function canonical(N, enemy, wall) {  // wall: null | {type:'r'|'d', x, y}
+const wKey = w => `${w.type}${w.x},${w.y}`;
+function mapWall(tf, wall) {
+  const a = tf([wall.x, wall.y]);
+  const b = tf(wall.type === 'r' ? [wall.x + 1, wall.y] : [wall.x, wall.y + 1]);
+  if (a[1] === b[1]) return { type: 'r', x: Math.min(a[0], b[0]), y: a[1] };
+  return { type: 'd', x: a[0], y: Math.min(a[1], b[1]) };
+}
+function canonical(N, enemy, walls) {  // walls: {type:'r'|'d', x, y} 배열 (0~n개)
   let best = null, bestCfg = null;
   for (const tf of transforms(N)) {
     const e = tf(enemy);
-    let w = null;
-    if (wall) {
-      const a = tf([wall.x, wall.y]);
-      const b = tf(wall.type === 'r' ? [wall.x + 1, wall.y] : [wall.x, wall.y + 1]);
-      if (a[1] === b[1]) w = { type: 'r', x: Math.min(a[0], b[0]), y: a[1] };
-      else w = { type: 'd', x: a[0], y: Math.min(a[1], b[1]) };
-    }
-    const key = `${e[0]},${e[1]}|${w ? w.type + w.x + ',' + w.y : '-'}`;
-    if (best === null || key < best) { best = key; bestCfg = { enemy: e, wall: w }; }
+    const ws = walls.map(w => mapWall(tf, w)).sort((a, z) => wKey(a) < wKey(z) ? -1 : 1);
+    const key = `${e[0]},${e[1]}|${ws.length ? ws.map(wKey).join('|') : '-'}`;
+    if (best === null || key < best) { best = key; bestCfg = { enemy: e, walls: ws }; }
   }
   return { key: best, cfg: bestCfg };
 }
-function isShieldedCorner(N, [ex, ey], wall) {  // 코너 적의 옆면(인접 면)에 벽
-  if (!wall) return false;
+function isShieldedCorner(N, [ex, ey], walls) {  // 코너 적의 옆면(인접 면)에 벽
   const corner = (ex === 0 || ex === N - 1) && (ey === 0 || ey === N - 1);
   if (!corner) return false;
-  const cells = wall.type === 'r'
-    ? [[wall.x, wall.y], [wall.x + 1, wall.y]]
-    : [[wall.x, wall.y], [wall.x, wall.y + 1]];
-  return cells.some(([x, y]) => x === ex && y === ey);
+  return (walls || []).some(wall => {
+    const cells = wall.type === 'r'
+      ? [[wall.x, wall.y], [wall.x + 1, wall.y]]
+      : [[wall.x, wall.y], [wall.x, wall.y + 1]];
+    return cells.some(([x, y]) => x === ex && y === ey);
+  });
 }
 
 if (args.includes('--build')) {
@@ -88,21 +99,27 @@ if (args.includes('--build')) {
   const entryTimeout = parseInt(opt('--entry-timeout', '300000'), 10);  // 항목당 솔브 제한 (ms)
   const shard = opt('--shard', null);                                   // "i/k": k개 프로세스 병렬 실행용
   const [shardI, shardK] = shard ? shard.split('/').map(Number) : [0, 1];
+  const wallsN = parseInt(opt('--walls', '1'), 10);                     // 1 = 벽 0~1개, 2 = 정확히 벽 2개 (별도 파일 w2)
+  const allWalls = [];
+  for (let y = 0; y < N; y++) for (let x = 0; x < N - 1; x++) allWalls.push({ type: 'r', x, y });
+  for (let y = 0; y < N - 1; y++) for (let x = 0; x < N; x++) allWalls.push({ type: 'd', x, y });
   const seen = new Set(); const combos = [];
   for (let ey = 0; ey < N; ey++) for (let ex = 0; ex < N; ex++) {
-    const walls = [null];
-    for (let y = 0; y < N; y++) for (let x = 0; x < N - 1; x++) walls.push({ type: 'r', x, y });
-    for (let y = 0; y < N - 1; y++) for (let x = 0; x < N; x++) walls.push({ type: 'd', x, y });
-    for (const w of walls) {
-      const { key, cfg } = canonical(N, [ex, ey], w);
+    const sets = wallsN === 2
+      ? allWalls.flatMap((a, i) => allWalls.slice(i + 1).map(b => [a, b]))
+      : [[], ...allWalls.map(w => [w])];
+    for (const ws of sets) {
+      const { key, cfg } = canonical(N, [ex, ey], ws);
       if (seen.has(key)) continue;
       seen.add(key);
       combos.push(cfg);
     }
   }
-  const mainFile = path.join(ROOT, 'Level', `catalog-b${N}.json`);
-  const file = shard ? path.join(ROOT, 'Level', `catalog-b${N}.shard${shardI}.json`) : mainFile;
-  const rkey = r => `${r.combat}|${r.enemy[0]},${r.enemy[1]}|${r.wall ? r.wall.type + r.wall.x + ',' + r.wall.y : '-'}`;
+  const suffix = wallsN === 2 ? 'w2' : '';
+  const mainFile = path.join(ROOT, 'Level', `catalog-b${N}${suffix}.json`);
+  const file = shard ? path.join(ROOT, 'Level', `catalog-b${N}${suffix}.shard${shardI}.json`) : mainFile;
+  const wallsOf = r => r.walls || (r.wall ? [r.wall] : []);
+  const rkey = r => `${r.combat}|${r.enemy[0]},${r.enemy[1]}|${wallsOf(r).length ? wallsOf(r).map(wKey).join('|') : '-'}`;
   // 이어하기 규칙: min 확정 항목은 유지. min null(cap 초과·타임아웃) 항목은
   // 지금 cap이 그때보다 크면 재계산, 아니면 유지. 샤드 실행 시 본 파일의 유효 항목도 스킵 대상.
   const out = [];
@@ -122,15 +139,18 @@ if (args.includes('--build')) {
   const save = () => fs.writeFileSync(file, JSON.stringify({ board: N, cap, runs, builtAt: new Date().toISOString(), entries: out }, null, 1));
   let done = 0, idx = -1;
   for (const combat of [false, true]) {
-    for (const { enemy, wall } of combos) {
+    for (const { enemy, walls } of combos) {
       idx++;
       if (shard && idx % shardK !== shardI) continue;
-      const rec0 = { board: N, combat, enemy, wall };
+      const rec0 = { board: N, combat, enemy };
+      if (walls.length === 1) rec0.wall = walls[0];        // 벽1 카탈로그 하위호환 필드
+      else if (walls.length >= 2) rec0.walls = walls;
+      else rec0.wall = null;
       if (doneKeys.has(rkey(rec0))) continue;
       const cfg = {
         board: N, enemies: [enemy], combat,
-        rightWalls: wall && wall.type === 'r' ? [[wall.x, wall.y]] : [],
-        downWalls: wall && wall.type === 'd' ? [[wall.x, wall.y]] : [],
+        rightWalls: walls.filter(w => w.type === 'r').map(w => [w.x, w.y]),
+        downWalls: walls.filter(w => w.type === 'd').map(w => [w.x, w.y]),
       };
       const t0 = Date.now();
       const deadline = t0 + entryTimeout;
@@ -144,7 +164,7 @@ if (args.includes('--build')) {
       const rec = {
         ...rec0,
         min: r.min, cap, solveMs: Date.now() - t0,
-        shieldedCorner: isShieldedCorner(N, enemy, wall),
+        shieldedCorner: isShieldedCorner(N, enemy, walls),
       };
       if (timedOut) rec.timedOut = true;
       if (r.min !== null) {
@@ -155,20 +175,22 @@ if (args.includes('--build')) {
       out.push(rec);
       done++;
       save();
-      console.log(`  +${done} enemy ${enemy} wall ${wall ? wall.type + wall.x + ',' + wall.y : '-'} combat ${combat} → min ${r.min}${timedOut ? ' (timeout)' : ''}, ${Date.now() - t0}ms`);
+      console.log(`  +${done} enemy ${enemy} wall ${walls.length ? walls.map(wKey).join('|') : '-'} combat ${combat} → min ${r.min}${timedOut ? ' (timeout)' : ''}, ${Date.now() - t0}ms`);
     }
   }
   save();
   console.log(`저장: ${file} (${out.length}개 항목)`);
   if (!shard) syncViewer();   // 샤드 실행은 병합(--merge) 시점에 굽는다
 } else if (args.includes('--merge')) {
-  // 샤드 파일들을 본 카탈로그로 병합: min 확정 > 높은 cap의 null 순으로 우선
+  // 샤드 파일들을 본 카탈로그로 병합: min 확정 > 높은 cap의 null 순으로 우선. --walls 2 는 w2 파일 대상.
   const N = parseInt(opt('--merge'), 10);
-  const mainFile = path.join(ROOT, 'Level', `catalog-b${N}.json`);
-  const rkey = r => `${r.combat}|${r.enemy[0]},${r.enemy[1]}|${r.wall ? r.wall.type + r.wall.x + ',' + r.wall.y : '-'}`;
+  const suffix = parseInt(opt('--walls', '1'), 10) === 2 ? 'w2' : '';
+  const mainFile = path.join(ROOT, 'Level', `catalog-b${N}${suffix}.json`);
+  const wallsOf = r => r.walls || (r.wall ? [r.wall] : []);
+  const rkey = r => `${r.combat}|${r.enemy[0]},${r.enemy[1]}|${wallsOf(r).length ? wallsOf(r).map(wKey).join('|') : '-'}`;
   const best = new Map();
   const rank = r => (r.min !== null ? 1e9 : (r.cap || 0));
-  const files = [mainFile, ...fs.readdirSync(path.join(ROOT, 'Level')).filter(f => f.startsWith(`catalog-b${N}.shard`)).map(f => path.join(ROOT, 'Level', f))];
+  const files = [mainFile, ...fs.readdirSync(path.join(ROOT, 'Level')).filter(f => f.startsWith(`catalog-b${N}${suffix}.shard`)).map(f => path.join(ROOT, 'Level', f))];
   let maxCap = 0, runsV = 800;
   for (const f of files) {
     if (!fs.existsSync(f)) continue;
@@ -188,7 +210,8 @@ if (args.includes('--build')) {
   syncViewer();
 } else if (args.includes('--query')) {
   const N = parseInt(opt('--query'), 10);
-  const file = path.join(ROOT, 'Level', `catalog-b${N}.json`);
+  const suffix = parseInt(opt('--walls', '1'), 10) === 2 ? 'w2' : '';
+  const file = path.join(ROOT, 'Level', `catalog-b${N}${suffix}.json`);
   const cat = JSON.parse(fs.readFileSync(file, 'utf8'));
   let rows = cat.entries;
   if (args.includes('--combat')) rows = rows.filter(r => r.combat === (opt('--combat') === 'true'));
@@ -199,7 +222,8 @@ if (args.includes('--build')) {
   if (!args.includes('--shielded')) rows = rows.filter(r => !r.shieldedCorner);
   rows.sort((a, b) => (a.min ?? 99) - (b.min ?? 99) || (b.bot ?? 0) - (a.bot ?? 0));
   for (const r of rows) {
-    const w = r.wall ? `${r.wall.type === 'r' ? 'rightWall' : 'downWall'} [${r.wall.x},${r.wall.y}]` : '벽 없음';
+    const ws = r.walls || (r.wall ? [r.wall] : []);
+    const w = ws.length ? ws.map(x => `${x.type === 'r' ? 'rightWall' : 'downWall'} [${x.x},${x.y}]`).join(' + ') : '벽 없음';
     console.log(`enemy [${r.enemy}] · ${w} · combat ${r.combat} → min ${r.min ?? '>cap'} · 예고봇 ${r.bot ?? '-'}% (median ${r.botMedian ?? '-'})${r.shieldedCorner ? ' ⚠️차폐코너' : ''}`);
   }
   console.log(`— ${rows.length}개 일치 (카탈로그 ${cat.entries.length}개, cap ${cat.cap}, runs ${cat.runs})`);
