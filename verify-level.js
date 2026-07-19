@@ -21,7 +21,7 @@ const LAB = path.join(__dirname, 'level-lab.html');
 let code = fs.readFileSync(LAB, 'utf8').match(/<script type="text\/worker" id="workerSrc">([\s\S]*?)<\/script>/)[1];
 code = code.replace(/const P = t => self\.postMessage[\s\S]*$/, '');
 const eng = new Function('self', code + `
-return { solveMin, mcStats, solveWithSeed, makeCtx, capture, isSuicide, spreadChoices, candidateMoves };`)({ postMessage() {} });
+return { solveMin, mcStats, solveWithSeed, makeCtx, capture, isSuicide, spreadChoices, candidateMoves, foeCells, spawnFoe };`)({ postMessage() {} });
 
 const args = process.argv.slice(2);
 if (!args[0] || args[0].startsWith('--')) {
@@ -37,13 +37,13 @@ const budget = args.includes('--budget') ? parseInt(opt('--budget'), 10) : null;
 // ── 보장 수 모드: 현재 국면에서 최악 확산에도 승리가 보장되는 수 목록 ──
 if (args.includes('--winmove')) {
   const st = JSON.parse(opt('--winmove'));
-  const N = cfg.board, EMPTY = 0, ENEMY = -1;
+  const N = cfg.board, EMPTY = 0;
   const C = eng.makeCtx(N, cfg.rightWalls || [], cfg.downWalls || []);
   const b0 = new Array(N * N).fill(EMPTY);
-  for (const [x, y] of cfg.enemies) b0[y * N + x] = ENEMY;
+  for (const e of eng.foeCells(cfg)) b0[e.y * N + e.x] = e.v;   // 적 속성(hp·combat) 인코딩 포함
   for (const [x, y] of st.stones || []) b0[y * N + x] = 1;
   const ann0 = st.ann ? st.ann[1] * N + st.ann[0] : null;
-  const enemyCnt = bb => { let n = 0; for (const v of bb) if (v === ENEMY) n++; return n; };
+  const enemyCnt = bb => { let n = 0; for (const v of bb) if (v < 0) n++; return n; };
   const memo = new Map();
   function win(b, stones, s) {
     if (stones <= 0) return false;
@@ -57,22 +57,25 @@ if (args.includes('--winmove')) {
   }
   function winWith(b, stones, s, m) {
     const g2 = b.slice(); g2[m] = 1;
-    eng.capture(g2, C, cfg.combat);
+    eng.capture(g2, C, false);                     // 속성은 셀 값에 인코딩 (foeCells)
     if (enemyCnt(g2) === 0) return true;
     const choices0 = eng.spreadChoices(g2, C);
-    const sValid = s !== null && g2[s] === EMPTY && C.nbrs[s].some(n => g2[n] === ENEMY);
+    const sValid = s !== null && g2[s] === EMPTY && C.nbrs[s].some(n => g2[n] < 0);
     let pick;
     if (sValid) {
       const sSafe = !eng.isSuicide(g2, C, s);
       const allSui = choices0.length > 0 && choices0.every(c => eng.isSuicide(g2, C, c));
       pick = (sSafe || allSui) ? [s] : choices0;
     } else pick = choices0;
+    if (!pick.length) return win(g2, stones - 1, null);   // 적 확산 불가(정지): 무행동 후 계속
     for (const sc of pick) {
-      const g3 = g2.slice(); g3[sc] = ENEMY;
-      eng.capture(g3, C, cfg.combat);
+      const g3 = g2.slice(); g3[sc] = eng.spawnFoe(g2, C, sc);
+      eng.capture(g3, C, false);
       if (enemyCnt(g3) === 0) continue;
       if (stones - 1 <= 0) return false;
-      for (const ann of eng.spreadChoices(g3, C)) if (!win(g3, stones - 1, ann)) return false;
+      const anns = eng.spreadChoices(g3, C);       // 예고 없음 = 정지 상태로 계속
+      if (!anns.length) { if (!win(g3, stones - 1, null)) return false; continue; }
+      for (const ann of anns) if (!win(g3, stones - 1, ann)) return false;
     }
     return true;
   }

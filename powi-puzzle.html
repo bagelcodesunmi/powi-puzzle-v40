@@ -107,6 +107,13 @@ let prng = Math.random;   // 레벨 로드 시 교체됨
 let currentSeed = 0;      // 현재 레벨에서 사용 중인 시드
 
 const EMPTY = 0, ENEMY = -1;
+// [적 개체화 2026-07-19] 적 음수 코드 비트: bit0=전투, bit1=hp2, bit2=잠금 (docs/checklist-enemy-traits.md)
+// -1 일반 · -2 전투 · -3 hp2 · -4 hp2+전투 · -5~-8 잠금 변형 (밀폐 순간 볼리를 이미 받고 생존 — 재발사 없음)
+const foeCombat = v => ((-v - 1) & 1) === 1;
+const foeTough = v => ((-v - 1) & 2) === 2;
+const foeLocked = v => ((-v - 1) & 4) === 4;
+const foeNorm = v => foeLocked(v) ? v + 4 : v;
+const foeValue = (hp2, combat) => -(1 + (combat ? 1 : 0) + (hp2 ? 2 : 0));
 
 // ===== 상태 =====
 let N = 2;
@@ -118,6 +125,7 @@ let flashes = [], particles = [];
 let dying = [];                                // 폭발 큐 (화살 명중 시각에 터뜨림)
 let bolts = [];                                // [v30] 포획 화살 + [v33] 전투 화살(combat:true) 공용
 let pendingHits = [];                          // [v34] 반격 명중 큐 {c, at}: 화살 명중 순간 벽 내구도 감소 (loop에서 처리)
+let pendingFlashes = [];                       // [적 개체화] 지연 플래시 큐 {c, at, col}: hp2 피격 강등 표시
 let stonePop = 0;                              // 턴 소모 팝 애니메이션 (1→0)
 let shake = 0;
 let toast = null, failWaiting = false, advanceTimer = null;
@@ -172,6 +180,7 @@ function loadLevel(i, { reuse = false } = {}) {
   dying = [];
   bolts = [];
   pendingHits = [];
+  pendingFlashes = [];
   stonePop = 0;
   shake = 0; toast = null; failWaiting = false;
   hover = null;
@@ -187,8 +196,12 @@ function loadLevel(i, { reuse = false } = {}) {
   const doMirror = level.mirror !== false;
   const fx = doMirror && prng() < .5;
   const fy = doMirror && prng() < .5;
-  for (const [x, y] of level.enemies) {
-    grid[idx(fx ? N - 1 - x : x, fy ? N - 1 - y : y)] = ENEMY;
+  // 적 항목: [x,y] | [x,y,hp] | [x,y,hp,combat(0/1)] — combat 생략 시 레벨 combat 플래그가 기본 속성
+  for (const e of level.enemies) {
+    const [x, y] = e;
+    const hp2 = e[2] === 2;
+    const cb = e.length > 3 ? !!e[3] : !!level.combat;
+    grid[idx(fx ? N - 1 - x : x, fy ? N - 1 - y : y)] = foeValue(hp2, cb);
   }
   // edge wall: 적과 같은 미러링 적용 (상대 위치 유지).
   // 반전 시 경계 벽의 기준 칸이 바뀐다 — rightWall은 x반전에서 (N-2-x), downWall은 y반전에서 (N-2-y).
@@ -212,7 +225,7 @@ function loadLevel(i, { reuse = false } = {}) {
   updateHud();
 }
 
-function enemyCount() { return grid.filter(v => v === ENEMY).length; }
+function enemyCount() { return grid.filter(v => v < 0).length; }
 
 function updateHud() {
   document.getElementById('uiLevel').textContent = levelIdx + 1;
@@ -298,7 +311,8 @@ function enemyPhase() {
 // 반환: {shots, counters} — 포획 실행과 배치 미리보기가 공유 (예고 = 실제).
 function computeShots(board) {
   const seen = new Array(N * N).fill(false);
-  const shots = [];                             // 내 화살: {from: 블록, to: 적}
+  const shots = [];                             // 내 화살: {from: 블록, to: 적, round, kill}
+  const sets = [];                              // 사후 상태 변경: [칸, 새 값] (사망=EMPTY, hp2 강등, 잠금)
   const counters = [];                          // 반격 화살: {from: 적, to: 블록} — 밀폐 영역의 적만 (v36)
   for (let i = 0; i < N * N; i++) {
     if (isBlock(board[i]) || seen[i]) continue;
@@ -310,7 +324,7 @@ function computeShots(board) {
       const c = queue.pop();
       cells.push(c);
       if (board[c] === EMPTY) empties++;
-      else if (board[c] === ENEMY) hasEnemy = true;
+      else if (board[c] < 0) hasEnemy = true;
       const cx = c % N, cy = (c / N) | 0;
       for (const [dx, dy] of DIRS) {
         const nx = cx + dx, ny = cy + dy;
@@ -320,7 +334,10 @@ function computeShots(board) {
       }
     }
     if (!hasEnemy || empties > 0) continue;            // 완전 밀폐(빈칸 0)만 발동
-    const enemySet = new Set(cells);                   // 빈칸 0이므로 영역 = 적 칸 전부
+    const foes = cells.filter(c => board[c] < 0).sort((a, b) => a - b);
+    // [규칙 b] 발사는 밀폐 "순간" 1회 — 전원 잠금이면 이미 발사된 밀폐 잔존, 재발사 없음
+    if (foes.every(c => foeLocked(board[c]))) continue;
+    const enemySet = new Set(foes);
     const walls = new Set();
     for (const c of enemySet) {
       const cx = c % N, cy = (c / N) | 0;
@@ -329,35 +346,54 @@ function computeShots(board) {
         if (inBoard(nx, ny) && isBlock(board[idx(nx, ny)]) && !blockedBetween(cx, cy, nx, ny)) walls.add(idx(nx, ny));
       }
     }
-    // [내 화살 — 최대 매칭] 블록들이 조율해 최대 마릿수 처치. 블록·적 모두 좌상단 순 (결정론, 솔버와 동일 기준).
+    // [내 화살 — 최대 매칭 × 라운드(연타)] 블록·적 좌상단 순 (결정론, 솔버와 동일 기준).
+    // 라운드마다 "아직 안 쏜 벽 × 생존 적" 재매칭 — hp1 전용 판은 1라운드로 끝나 기존과 동일.
     const wallOrder = [...walls].sort((a, b) => a - b);
-    const foesOf = w => {
-      const wx = w % N, wy = (w / N) | 0, out = [];
-      for (const [dx, dy] of DIRS) {
-        const nx = wx + dx, ny = wy + dy;
-        if (inBoard(nx, ny) && enemySet.has(idx(nx, ny)) && !blockedBetween(wx, wy, nx, ny)) out.push(idx(nx, ny));
-      }
-      return out.sort((a, b) => a - b);
-    };
-    const matchedBy = new Map();                  // 적 → 블록
-    const augment = (w, visited) => {
-      for (const f of foesOf(w)) {
-        if (visited.has(f)) continue;
-        visited.add(f);
-        if (!matchedBy.has(f) || augment(matchedBy.get(f), visited)) {
-          matchedBy.set(f, w);                    // 재배정: 기존 블록은 다른 적으로 밀려남 (매칭 유지)
-          return true;
+    const hp = new Map(foes.map(c => [c, foeTough(board[c]) ? 2 : 1]));
+    const fired = new Set();
+    let engaged = false, killsHere = 0, round = 0;
+    while (true) {
+      const alive = new Set(foes.filter(c => hp.get(c) > 0));
+      if (!alive.size) break;
+      const foesOf = w => {
+        const wx = w % N, wy = (w / N) | 0, out = [];
+        for (const [dx, dy] of DIRS) {
+          const nx = wx + dx, ny = wy + dy;
+          if (inBoard(nx, ny) && alive.has(idx(nx, ny)) && !blockedBetween(wx, wy, nx, ny)) out.push(idx(nx, ny));
         }
+        return out.sort((a, b) => a - b);
+      };
+      const matchedBy = new Map();                // 적 → 블록 (이번 라운드)
+      const augment = (w, visited) => {
+        for (const f of foesOf(w)) {
+          if (visited.has(f)) continue;
+          visited.add(f);
+          if (!matchedBy.has(f) || augment(matchedBy.get(f), visited)) { matchedBy.set(f, w); return true; }
+        }
+        return false;
+      };
+      for (const w of wallOrder) if (!fired.has(w)) augment(w, new Set());
+      if (!matchedBy.size) break;
+      const shotOf = new Map();
+      for (const [f, w] of matchedBy) shotOf.set(w, f);
+      for (const w of wallOrder) if (shotOf.has(w)) {
+        const f = shotOf.get(w);
+        fired.add(w); hp.set(f, hp.get(f) - 1);
+        const kill = hp.get(f) <= 0;
+        if (kill) killsHere++;
+        shots.push({ from: w, to: f, round, kill });
       }
-      return false;
-    };
-    for (const w of wallOrder) augment(w, new Set());
-    const shotOf = new Map();                     // 블록 → 적 (발사 목록 재구성)
-    for (const [f, w] of matchedBy) shotOf.set(w, f);
-    for (const w of wallOrder) if (shotOf.has(w)) shots.push({ from: w, to: shotOf.get(w) });
-    // [반격 — v36] 밀폐 영역의 적 전원(죽는 적 포함)이 인접 벽에 화살 1발, 벽당 1타 (최대 매칭).
-    // 벽 후보는 내구도 최저 우선(동률 시 좌상단) — "적은 가장 약한 벽부터". 다른 영역의 적은 불참.
-    const foeOrder = [...enemySet].sort((a, b) => a - b);
+      engaged = true; round++;
+    }
+    for (const f of foes) {                       // 사후 상태: 사망 / hp2 강등 / 잠금·해제
+      if (hp.get(f) <= 0) { sets.push([f, EMPTY]); continue; }
+      let nv = foeNorm(board[f]);
+      if (foeTough(nv) && hp.get(f) === 1) nv += 2;              // hp2 피격 강등
+      if (engaged && killsHere === 0) nv -= 4;                   // 교전 후 생존 + 영역 그대로 밀폐 → 잠금
+      if (nv !== board[f]) sets.push([f, nv]);
+    }
+    // [반격 — v36] 밀폐 영역의 "전투 속성" 적 전원(죽는 적 포함)이 인접 벽에 화살 1발, 벽당 1타 (최대 매칭).
+    const foeOrder = foes.filter(c => foeCombat(board[c]));
     const wallsOfFoe = f => {
       const fx2 = f % N, fy2 = (f / N) | 0, out = [];
       for (const [dx, dy] of DIRS) {
@@ -380,20 +416,22 @@ function computeShots(board) {
     for (const [w, f] of hitBy) counterOf.set(f, w);
     for (const f of foeOrder) if (counterOf.has(f)) counters.push({ from: f, to: counterOf.get(f) });
   }
-  return { shots, counters };
+  return { shots, counters, sets };
 }
 
 function captureRegions() {
-  const { shots, counters } = computeShots(grid);
-  if (!shots.length) return 0;
+  const { shots, counters, sets } = computeShots(grid);
+  if (!shots.length && !sets.length) return 0;
   const t0 = performance.now();
-  shots.forEach(({ from, to }) => {
-    grid[to] = EMPTY;                                  // 로직은 즉시 — 죽은 칸은 다음 조임의 자리
-    bolts.push({ from, to, at: t0, dur: 225 });        // [동시 발사] 전 화살 일제 발사·일제 명중
-    dying.push({ c: to, at: t0 + 225, done: false });  // 명중 순간 폭발
+  for (const [c, v] of sets) grid[c] = v;              // 로직은 즉시 — 사망/강등/잠금 (죽은 칸은 다음 조임의 자리)
+  const ROUND_GAP = 180;                               // 연타 라운드 간 간격 (2라운드 화살은 반 박자 늦게)
+  shots.forEach(({ from, to, round, kill }) => {
+    const at = t0 + round * ROUND_GAP;
+    bolts.push({ from, to, at, dur: 225 });            // [동시 발사] 같은 라운드는 일제 발사·일제 명중
+    if (kill) dying.push({ c: to, at: at + 225, done: false });        // 명중 순간 폭발
+    else pendingFlashes.push({ c: to, at: at + 225, col: '255,215,90' });   // hp2 강등 피격 표시
   });
-  for (const { from, to } of counters) {               // [v36] 반격: 밀폐 영역의 적만, 전투 레벨만
-    if (!level.combat) break;
+  for (const { from, to } of counters) {               // [v36] 반격: 밀폐 영역의 전투 속성 적만
     bolts.push({ from, to, at: t0, dur: 225, combat: true });   // 반격 화살: 내 화살과 교차 비행
     pendingHits.push({ c: to, at: t0 + 225 });                  // 명중 순간 내구도 감소 (화면·로직 동기)
   }
@@ -442,22 +480,55 @@ function executeSpread() {
     target = pickSpreadCell();                   // 예고 무효(막힘/자살화) → 재선택
   }
   if (target !== null) {
-    grid[target] = ENEMY;
+    grid[target] = spawnFoeValue(target);        // 확산 자식: hp1, 혈통 전투 상속 (혼합 인접은 전투 우선)
     flashes.push({ c: target, t: 1, col: '217,74,61' });   // 확산 순간 표시
   }
   nextSpread = null;
 }
 
+function spawnFoeValue(i) {
+  const cx = i % N, cy = (i / N) | 0;
+  for (const [dx, dy] of DIRS) {
+    const nx = cx + dx, ny = cy + dy;
+    if (inBoard(nx, ny) && grid[idx(nx, ny)] < 0 && !blockedBetween(cx, cy, nx, ny) && foeCombat(grid[idx(nx, ny)]))
+      return foeValue(false, true);
+  }
+  return foeValue(false, false);
+}
+
+// [규칙 b] 벽 파괴로 밀폐가 풀린 영역의 잠금 해제 — 다시 밀폐되면 새 볼리 대상
+function unlockAround(c) {
+  const cx = c % N, cy = (c / N) | 0;
+  for (const [dx, dy] of DIRS) {
+    const nx = cx + dx, ny = cy + dy;
+    if (!inBoard(nx, ny) || blockedBetween(cx, cy, nx, ny)) continue;
+    const ni = idx(nx, ny);
+    if (!(grid[ni] < 0 && foeLocked(grid[ni]))) continue;
+    const q = [ni]; const vis = new Set([ni]);
+    while (q.length) {
+      const k = q.pop();
+      if (grid[k] < 0 && foeLocked(grid[k])) grid[k] = foeNorm(grid[k]);
+      const kx = k % N, ky = (k / N) | 0;
+      for (const [ex, ey] of DIRS) {
+        const mx = kx + ex, my = ky + ey;
+        if (!inBoard(mx, my) || blockedBetween(kx, ky, mx, my)) continue;
+        const mi = idx(mx, my);
+        if (!isBlock(grid[mi]) && !vis.has(mi)) { vis.add(mi); q.push(mi); }
+      }
+    }
+  }
+}
+
 function isAdjacentToEnemy(i) {
   const cx = i % N, cy = (i / N) | 0;
   return DIRS.some(([dx, dy]) =>
-    inBoard(cx + dx, cy + dy) && grid[idx(cx + dx, cy + dy)] === ENEMY && !blockedBetween(cx, cy, cx + dx, cy + dy));
+    inBoard(cx + dx, cy + dy) && grid[idx(cx + dx, cy + dy)] < 0 && !blockedBetween(cx, cy, cx + dx, cy + dy));
 }
 
 function pickSpreadCell() {
   const frontier = new Set();
   for (let i = 0; i < N * N; i++) {
-    if (grid[i] !== ENEMY) continue;
+    if (!(grid[i] < 0)) continue;
     const cx = i % N, cy = (i / N) | 0;
     for (const [dx, dy] of DIRS) {
       const nx = cx + dx, ny = cy + dy;
@@ -570,13 +641,14 @@ function drawCell(x, y, color, r = 0.42) {
   ctx.fill();
 }
 
-function drawEnemy(x, y) {
-  drawCell(x, y, '#d94a3d', 0.44);
+function drawEnemy(x, y, v = ENEMY) {
+  // 전투 속성 = 보라 (만지면 아프다), 비전투 = 빨강. 숫자 = 남은 내구도 (hp2면 2)
+  drawCell(x, y, foeCombat(v) ? '#8e44ad' : '#d94a3d', 0.44);
   ctx.fillStyle = '#fff';
   ctx.font = `700 ${cell * 0.34}px system-ui`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText('1', pad + (x + .5) * cell, pad + (y + .52) * cell);
+  ctx.fillText(foeTough(v) ? '2' : '1', pad + (x + .5) * cell, pad + (y + .52) * cell);
 }
 
 function draw(now) {
@@ -649,7 +721,7 @@ function draw(now) {
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(v, pad + (x + .5) * cell, pad + (y + .52) * cell);
-    } else if (v === ENEMY) drawEnemy(x, y);
+    } else if (v < 0) drawEnemy(x, y, v);
   }
 
   // 배치 미리보기 (누르는 중)
@@ -785,10 +857,19 @@ function loop(t) {
       if (isBlock(grid[hit.c])) {
         grid[hit.c]--;
         flashes.push({ c: hit.c, t: 1, col: '220,70,60' });
-        if (grid[hit.c] === 0) grid[hit.c] = EMPTY;
+        if (grid[hit.c] === 0) { grid[hit.c] = EMPTY; unlockAround(hit.c); }   // [규칙 b] 벽 파괴 → 인접 잠금 영역 해제
       }
     }
     pendingHits = rest;
+  }
+  // [적 개체화] 지연 플래시 (hp2 피격 강등 표시)
+  if (pendingFlashes.length) {
+    const rest2 = [];
+    for (const f of pendingFlashes) {
+      if (t < f.at) { rest2.push(f); continue; }
+      flashes.push({ c: f.c, t: 1, col: f.col });
+    }
+    pendingFlashes = rest2;
   }
   // 연쇄 폭발 처리: 시간이 된 적부터 팡 — 각 폭발마다 플래시·파편·흔들림
   if (dying.length) {

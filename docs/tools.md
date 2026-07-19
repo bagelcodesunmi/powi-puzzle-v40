@@ -30,8 +30,8 @@
 | 목적 | 사용할 도구 |
 |------|------------|
 | 레벨 편집 (단일 소스) | `Level/levels.json` → `node sync-levels.js`로 게임·툴·감정곡선 반영 |
-| **신규 레벨 후보 탐색 (적1+벽≤1 전수 카탈로그)** | `node catalog-walls.js --query N [조건]` — 아래 상세 참조 |
-| **카탈로그 시각 탐색 (보드 미리보기·필터·미러 변형)** | `catalog-viewer.html` (브라우저, 서버로 열기) |
+| **신규 레벨 후보 탐색 (적1+벽≤2 전수 카탈로그)** | `node catalog-walls.js --query N [조건]` — 아래 상세 참조 |
+| **카탈로그 시각 탐색 (보드 미리보기·필터·미러 변형)** | `catalog-viewer.html` (루트, 더블클릭 또는 서버 — 데이터는 Catalog/) |
 | **레벨 헤드리스 검증 (§14 ①~③ 자동화, CLI)** | `node verify-level.js '<cfg>' [--exact --seeds --winmove]` — 아래 상세 참조 |
 | 레벨 설계·검증 GUI (edge wall 포함) | `level-lab.html` (브라우저) |
 | 게임 플레이 확인 | `powi-puzzle.html` (브라우저) |
@@ -44,9 +44,9 @@
 
 ## 도구별 상세
 
-### `catalog-walls.js` — 적1+벽≤1 전 경우의 수 카탈로그 (2026-07-18 신규)
+### `catalog-walls.js` — 적1+벽≤2 전 경우의 수 카탈로그 (2026-07-18 신규, 07-19 벽2 확장)
 "적 1기 + edge wall 0~1개"의 모든 배치를 대칭(D4 8변형) 중복 제거 후 전수 솔브해
-`Level/catalog-b{N}.json`에 저장한다. 신규 레벨을 설계할 때 손으로 후보를 만드는 대신
+`Catalog/catalog-b{N}.json`에 저장한다. 신규 레벨을 설계할 때 손으로 후보를 만드는 대신
 **카탈로그에서 조건 검색**으로 시작한다. 엔진은 level-lab 워커 소스를 그대로 추출 — 게임 규칙과 드리프트 없음.
 
 ```bash
@@ -65,7 +65,9 @@ node catalog-walls.js --query 4 --min-max 5 --shielded           # 차폐 코너
 *주의*:
 - 카탈로그는 **대칭 대표형만** 담는다. 실제 레벨에 넣을 때 방향이 중요하면(초반 튜토리얼) 원하는 반전형으로 좌표를 변환해 쓴다.
 - 예고봇 %는 800판 측정 — ±3~4%p 노이즈. 채택 전 `runs 2000+`로 재측정할 것 (레벨랩 또는 검증 스크립트).
-- 벽 2개 이상 조합은 카탈로그 밖 — 후보 근처에서 수동 추가·솔버 재검증으로 확장.
+- 벽 2개는 w2 카탈로그로 포함(2026-07-19). 벽 3개+·적 2기는 카탈로그 밖 — 스윕 스크립트로 확장.
+- min은 실제값까지 계산하는 정책(cap 20) — 항목당 타임아웃(기본 300초, w2는 120초 사용) 초과분만 null(9+) 기록.
+- verify-level.js/카탈로그 cfg의 enemies는 적 속성 지원: `{x,y,hp,combat}` 또는 `[x,y,hp,combat]`.
 - `shieldedCorner` 플래그 = v43 가이드 §9-6 차폐 코너 (기본 검색에서 제외됨).
 
 ### `verify-level.js` — 레벨 헤드리스 검증 CLI (2026-07-19 신규)
@@ -87,10 +89,11 @@ node verify-level.js '<cfg>' --winmove '{"stones":[[1,2]],"budget":3,"ann":[1,3]
 게임 규칙이 바뀌면 level-lab 워커가 바뀐 뒤 자동으로 같은 규칙을 쓴다 (추출 방식이라 드리프트 없음).
 
 ### `catalog-viewer.html` — 카탈로그 시각 탐색 GUI (2026-07-18 신규)
-`Level/catalog-b*.json`을 읽어 후보를 **보드 미리보기 카드**로 보여준다.
+`Catalog/catalog-b*.json`을 읽어 후보를 (뷰어는 level-lab처럼 루트에 위치) **보드 미리보기 카드**로 보여준다.
 - **서버(localhost/미리보기)로 열면** json 실시간 로드 (항상 최신).
-- **더블클릭(file://)도 지원**: HTML에 구워진 스냅샷으로 표시 (게임·감정곡선과 같은 패턴).
+- **더블클릭(file://)도 지원**: `Catalog/catalog-snapshot.js`(압축 스냅샷, `<script src>`는 file://에서도 로드됨)로 표시.
   스냅샷은 `--build`/`--merge` 시 자동 갱신되고, 수동 갱신은 `node catalog-walls.js --sync-viewer`.
+  다른 곳으로 복사할 땐 **viewer html + Catalog/ 폴더를 함께** 옮길 것.
 - 필터: 보드(3/4/5) · 전투 · min · 예고봇 대역(90%+/40~80/40미만) · 차폐 코너 포함 여부(기본 제외)
 - 정렬: min ↑ / 예고봇 ↓·↑
 - 카드 클릭 → 상세 패널: **좌우/상하 미러 변형 미리보기**(게임 미러링이 보여줄 4방향 확인) + 레벨 JSON 복사
