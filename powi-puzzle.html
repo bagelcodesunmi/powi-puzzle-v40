@@ -76,9 +76,12 @@ const LEVELS = [
 // v43 edge wall scaffold fields: rightWalls, downWalls
 let rightWallSet = new Set();
 let downWallSet = new Set();
+// [금 간 벽 2026-07-20] 적만 부술 수 있는 1히트 경계벽 — 부서지기 전엔 일반 경계벽과 동일 차단 (docs/checklist-cracked-walls.md)
+let crackedRightSet = new Set();
+let crackedDownSet = new Set();
 const wallKey = (x, y) => `${x},${y}`;
-function hasRightWall(x, y) { return rightWallSet.has(wallKey(x, y)); }
-function hasDownWall(x, y) { return downWallSet.has(wallKey(x, y)); }
+function hasRightWall(x, y) { return rightWallSet.has(wallKey(x, y)) || crackedRightSet.has(wallKey(x, y)); }
+function hasDownWall(x, y) { return downWallSet.has(wallKey(x, y)) || crackedDownSet.has(wallKey(x, y)); }
 function blockedBetween(x1, y1, x2, y2) {
   const dx = x2 - x1, dy = y2 - y1;
   if (Math.abs(dx) + Math.abs(dy) !== 1) return false;
@@ -121,6 +124,7 @@ let levelIdx = 0, level = null;
 let grid, gameOver;
 let stonesLeft = 0, turnLeft = 0, turnIdx = 0;
 let nextSpread = null;
+let nextBreak = null;                          // [금 간 벽] 다음 적 턴에 부술 벽 {t:'r'|'d', x, y} — 확산보다 우선
 let flashes = [], particles = [];
 let dying = [];                                // 폭발 큐 (화살 명중 시각에 터뜨림)
 let bolts = [];                                // [v30] 포획 화살 + [v33] 전투 화살(combat:true) 공용
@@ -209,6 +213,12 @@ function loadLevel(i, { reuse = false } = {}) {
     wallKey(fx ? N - 2 - x : x, fy ? N - 1 - y : y)));
   downWallSet = new Set((level.downWalls || []).map(([x, y]) =>
     wallKey(fx ? N - 1 - x : x, fy ? N - 2 - y : y)));
+  // 금 간 벽: 일반 경계벽과 같은 미러 변환
+  crackedRightSet = new Set((level.crackedRightWalls || []).map(([x, y]) =>
+    wallKey(fx ? N - 2 - x : x, fy ? N - 1 - y : y)));
+  crackedDownSet = new Set((level.crackedDownWalls || []).map(([x, y]) =>
+    wallKey(fx ? N - 1 - x : x, fy ? N - 2 - y : y)));
+  nextBreak = null;
   if (level.walls) {   // 프리셋 벽: 적과 같은 미러링 적용 (상대 위치 유지)
     for (const [x, y, hp] of level.walls) {
       grid[idx(fx ? N - 1 - x : x, fy ? N - 1 - y : y)] = hp;
@@ -474,7 +484,56 @@ function isSuicideCell(c) {
   return empties === 1;                          // 이 칸이 영역의 마지막 빈칸
 }
 
+// [금 간 벽] 인접 적이 있는 intact 균열 벽 중 좌상단 우선 (y→x→r<d) — 워커 attackTarget과 동일 결정론
+function pickBreakTarget() {
+  const cands = [];
+  for (const key of crackedRightSet) { const [x, y] = key.split(',').map(Number); cands.push({ t: 'r', x, y }); }
+  for (const key of crackedDownSet) { const [x, y] = key.split(',').map(Number); cands.push({ t: 'd', x, y }); }
+  cands.sort((a, z) => (a.y - z.y) || (a.x - z.x) || (a.t < z.t ? -1 : 1));
+  for (const w of cands) {
+    const c1 = idx(w.x, w.y), c2 = w.t === 'r' ? idx(w.x + 1, w.y) : idx(w.x, w.y + 1);
+    if (grid[c1] < 0 || grid[c2] < 0) return w;
+  }
+  return null;
+}
+function breakValid(w) {
+  if (!w) return false;
+  const set = w.t === 'r' ? crackedRightSet : crackedDownSet;
+  if (!set.has(wallKey(w.x, w.y))) return false;
+  const c1 = idx(w.x, w.y), c2 = w.t === 'r' ? idx(w.x + 1, w.y) : idx(w.x, w.y + 1);
+  return grid[c1] < 0 || grid[c2] < 0;
+}
+function floodUnlockAt(seed) {                   // 벽 파괴로 영역이 열렸으면 그 영역의 잠금 해제 (워커 unlockRegionAt 미러)
+  if (isBlock(grid[seed])) return;
+  const q = [seed], vis = new Set([seed]), cells = [];
+  let hasEmpty = false;
+  while (q.length) {
+    const c = q.pop(); cells.push(c);
+    if (grid[c] === EMPTY) hasEmpty = true;
+    const cx = c % N, cy = (c / N) | 0;
+    for (const [dx, dy] of DIRS) {
+      const nx = cx + dx, ny = cy + dy;
+      if (!inBoard(nx, ny) || blockedBetween(cx, cy, nx, ny)) continue;
+      const ni = idx(nx, ny);
+      if (!isBlock(grid[ni]) && !vis.has(ni)) { vis.add(ni); q.push(ni); }
+    }
+  }
+  if (hasEmpty) for (const c of cells) if (grid[c] < 0 && foeLocked(grid[c])) grid[c] = foeNorm(grid[c]);
+}
+
 function executeSpread() {
+  // [금 간 벽] 벽 공격 우선: 인접 blob이 있으면 그 턴은 확산 대신 벽 파괴 (PRNG 소비 없음 — 툴과 소비 순서 동일)
+  let brk = breakValid(nextBreak) ? nextBreak : pickBreakTarget();
+  if (brk) {
+    (brk.t === 'r' ? crackedRightSet : crackedDownSet).delete(wallKey(brk.x, brk.y));
+    const c1 = idx(brk.x, brk.y), c2 = brk.t === 'r' ? idx(brk.x + 1, brk.y) : idx(brk.x, brk.y + 1);
+    flashes.push({ c: c1, t: 1, col: '240,200,90' });
+    flashes.push({ c: c2, t: 1, col: '240,200,90' });
+    shake = Math.min(16, shake + 5);
+    floodUnlockAt(isBlock(grid[c1]) ? c2 : c1);  // 열린 영역의 잠금 해제
+    nextBreak = null; nextSpread = null;
+    return;
+  }
   let target = nextSpread;
   if (target === null || grid[target] !== EMPTY || !isAdjacentToEnemy(target) || isSuicideCell(target)) {
     target = pickSpreadCell();                   // 예고 무효(막힘/자살화) → 재선택
@@ -483,7 +542,7 @@ function executeSpread() {
     grid[target] = spawnFoeValue(target);        // 확산 자식: hp1, 혈통 전투 상속 (혼합 인접은 전투 우선)
     flashes.push({ c: target, t: 1, col: '217,74,61' });   // 확산 순간 표시
   }
-  nextSpread = null;
+  nextSpread = null; nextBreak = null;
 }
 
 function spawnFoeValue(i) {
@@ -556,7 +615,11 @@ function pickSpreadCell() {
   return weighted[Math.floor(prng() * weighted.length)];
 }
 
-function computeNextSpread() { nextSpread = pickSpreadCell(); }
+function computeNextSpread() {
+  // [금 간 벽] 벽 공격 예정이면 예고 = 벽 (확산 추첨 없음 — PRNG 소비 없음, 툴과 소비 순서 동일)
+  nextBreak = pickBreakTarget();
+  nextSpread = nextBreak ? null : pickSpreadCell();
+}
 
 // [A-1] 예고 유효성: 실행(executeSpread)과 같은 기준으로 매 프레임 판정 — 예고가 거짓말하는 창 제거.
 // 예고 칸이 막히거나/비인접화되거나/자살화되면 숨김. 단 안전 칸이 전무하면(강제 자충 예정) 그대로 유효.
@@ -705,6 +768,39 @@ function draw(now) {
     ctx.beginPath();
     ctx.moveTo(px + cell * 0.16, py);
     ctx.lineTo(px + cell * 0.84, py);
+    ctx.stroke();
+  }
+  // [금 간 벽] 균열 경계벽: 호박색 점선 조각 — "부서질 수 있는 벽"이 겉모습으로 읽히게
+  ctx.strokeStyle = 'rgba(240,200,90,.95)';
+  ctx.lineWidth = Math.max(4, cell * 0.09);
+  for (const key of crackedRightSet) {
+    const [x, y] = key.split(',').map(Number);
+    const px = pad + (x + 1) * cell, py = pad + y * cell;
+    ctx.beginPath();
+    ctx.moveTo(px, py + cell * 0.16); ctx.lineTo(px, py + cell * 0.40);
+    ctx.moveTo(px, py + cell * 0.60); ctx.lineTo(px, py + cell * 0.84);
+    ctx.stroke();
+  }
+  for (const key of crackedDownSet) {
+    const [x, y] = key.split(',').map(Number);
+    const px = pad + x * cell, py = pad + (y + 1) * cell;
+    ctx.beginPath();
+    ctx.moveTo(px + cell * 0.16, py); ctx.lineTo(px + cell * 0.40, py);
+    ctx.moveTo(px + cell * 0.60, py); ctx.lineTo(px + cell * 0.84, py);
+    ctx.stroke();
+  }
+  // 파괴 예고: 부술 벽에 맥동 X 마커
+  if (!gameOver && breakValid(nextBreak)) {
+    const w = nextBreak;
+    const mx = w.t === 'r' ? pad + (w.x + 1) * cell : pad + (w.x + 0.5) * cell;
+    const my = w.t === 'r' ? pad + (w.y + 0.5) * cell : pad + (w.y + 1) * cell;
+    const pulse = 0.4 + 0.4 * Math.sin(now / 220);
+    const r2 = cell * 0.14;
+    ctx.strokeStyle = `rgba(240,200,90,${0.4 + pulse * 0.6})`;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(mx - r2, my - r2); ctx.lineTo(mx + r2, my + r2);
+    ctx.moveTo(mx + r2, my - r2); ctx.lineTo(mx - r2, my + r2);
     ctx.stroke();
   }
 

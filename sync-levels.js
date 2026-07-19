@@ -47,6 +47,8 @@ function gameLine(s) {
   if (s.walls && s.walls.length) p.push(`walls: [${s.walls.map(w => `[${w.x},${w.y},${w.hp}]`).join(',')}]`);
   if (s.rightWalls && s.rightWalls.length) p.push(`rightWalls: ${xyArr(s.rightWalls)}`);
   if (s.downWalls && s.downWalls.length) p.push(`downWalls: ${xyArr(s.downWalls)}`);
+  if (s.crackedRightWalls && s.crackedRightWalls.length) p.push(`crackedRightWalls: ${xyArr(s.crackedRightWalls)}`);
+  if (s.crackedDownWalls && s.crackedDownWalls.length) p.push(`crackedDownWalls: ${xyArr(s.crackedDownWalls)}`);
   if (s.hp === 2) p.push('hp: 2');
   if (s.mirror === false) p.push('mirror: false');
   p.push(`schedule: [${s.schedule.join(',')}]`, `spread: ${s.spread !== false}`, `combat: ${!!s.combat}`, `min: ${s.min}`, `exactBudget: ${!!s.exactBudget}`);
@@ -62,9 +64,11 @@ const foeObj = a => '[' + (a || []).map(e => {
   return s + ' }';
 }).join(', ') + ']';
 function presetLine(s) {
+  const cracked = (s.crackedRightWalls && s.crackedRightWalls.length) || (s.crackedDownWalls && s.crackedDownWalls.length)
+    ? `, crackedRightWalls: ${xyObj(s.crackedRightWalls)}, crackedDownWalls: ${xyObj(s.crackedDownWalls)}` : '';
   return `  { name: '${s.name}', board: ${s.board}, combat: ${!!s.combat}, hp: ${s.hp || 1}, mirror: ${s.mirror !== false}, ` +
     `enemies: ${foeObj(s.enemies)}, walls: [${(s.walls || []).map(w => `{ x: ${w.x}, y: ${w.y}, hp: ${w.hp} }`).join(', ')}], ` +
-    `rightWalls: ${xyObj(s.rightWalls)}, downWalls: ${xyObj(s.downWalls)} },`;
+    `rightWalls: ${xyObj(s.rightWalls)}, downWalls: ${xyObj(s.downWalls)}${cracked} },`;
 }
 
 // const NAME = [ ... ]; 블록을 통째로 교체 (const 선언 ~ 첫 '];')
