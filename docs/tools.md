@@ -31,7 +31,7 @@
 |------|------------|
 | 레벨 편집 (단일 소스) | `Level/levels.json` → `node sync-levels.js`로 게임·툴·감정곡선 반영 |
 | **신규 레벨 후보 탐색 (적1+벽≤1 전수 카탈로그)** | `node catalog-walls.js --query N [조건]` — 아래 상세 참조 |
-| **카탈로그 시각 탐색 (보드 미리보기·필터·미러 변형)** | `catalog-viewer.html` (브라우저, 서버로 열기) |
+| **카탈로그 시각 탐색 (보드 미리보기·필터·미러 변형)** | `Catalog/catalog-viewer.html` (브라우저 — 더블클릭 또는 서버) |
 | **레벨 헤드리스 검증 (§14 ①~③ 자동화, CLI)** | `node verify-level.js '<cfg>' [--exact --seeds --winmove]` — 아래 상세 참조 |
 | 레벨 설계·검증 GUI (edge wall 포함) | `level-lab.html` (브라우저) |
 | 게임 플레이 확인 | `powi-puzzle.html` (브라우저) |
@@ -46,7 +46,7 @@
 
 ### `catalog-walls.js` — 적1+벽≤1 전 경우의 수 카탈로그 (2026-07-18 신규)
 "적 1기 + edge wall 0~1개"의 모든 배치를 대칭(D4 8변형) 중복 제거 후 전수 솔브해
-`Level/catalog-b{N}.json`에 저장한다. 신규 레벨을 설계할 때 손으로 후보를 만드는 대신
+`Catalog/catalog-b{N}.json`에 저장한다. 신규 레벨을 설계할 때 손으로 후보를 만드는 대신
 **카탈로그에서 조건 검색**으로 시작한다. 엔진은 level-lab 워커 소스를 그대로 추출 — 게임 규칙과 드리프트 없음.
 
 ```bash
@@ -86,8 +86,8 @@ node verify-level.js '<cfg>' --winmove '{"stones":[[1,2]],"budget":3,"ann":[1,3]
 *주의*: 5×5 심층(min 7+) 솔브는 수십 초~수 분. 시드 검증은 §14-2 한계(파티클 PRNG) 그대로 적용.
 게임 규칙이 바뀌면 level-lab 워커가 바뀐 뒤 자동으로 같은 규칙을 쓴다 (추출 방식이라 드리프트 없음).
 
-### `catalog-viewer.html` — 카탈로그 시각 탐색 GUI (2026-07-18 신규)
-`Level/catalog-b*.json`을 읽어 후보를 **보드 미리보기 카드**로 보여준다.
+### `Catalog/catalog-viewer.html` — 카탈로그 시각 탐색 GUI (2026-07-18 신규)
+같은 폴더(`Catalog/`)의 `catalog-b*.json`을 읽어 후보를 **보드 미리보기 카드**로 보여준다.
 - **서버(localhost/미리보기)로 열면** json 실시간 로드 (항상 최신).
 - **더블클릭(file://)도 지원**: 같은 폴더의 `catalog-snapshot.js`(압축 스냅샷, `<script src>`는 file://에서도 로드됨)로 표시.
   스냅샷은 `--build`/`--merge` 시 자동 갱신되고, 수동 갱신은 `node catalog-walls.js --sync-viewer`.

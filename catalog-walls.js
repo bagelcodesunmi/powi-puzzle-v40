@@ -4,7 +4,7 @@
 // 생성: node catalog-walls.js --build 4            (4×4, combat 양쪽, 대칭 중복 제거)
 //       node catalog-walls.js --build 5 --cap 6    (5×5, min>6 은 "min: null"로 기록)
 //       옵션: --runs 800 (예고봇 판수) --cap 6 (솔버 예산 상한)
-//       결과: Level/catalog-b{N}.json
+//       결과: Catalog/catalog-b{N}.json
 // 검색: node catalog-walls.js --query 4 --combat true --min 3 --bot-min 90
 //       옵션: --min N (정확히) --min-max N --bot-min % --bot-max % --combat true|false
 //
@@ -29,12 +29,12 @@ const opt = (name, def) => { const i = args.indexOf(name); return i >= 0 ? args[
 // 카탈로그 스냅샷을 catalog-snapshot.js로 굽는다 (file:// 더블클릭 지원 — <script src>는 file://에서도 로드됨).
 // 압축 배열 포맷: [combat, ex, ey, wallsStr('d2,1|r0,0'), min(-1=null), bot(-1=없음), median(-1), flags(1=차폐,2=타임아웃)]
 function syncViewer() {
-  const OUT = path.join(ROOT, 'catalog-snapshot.js');
+  const OUT = path.join(ROOT, 'Catalog', 'catalog-snapshot.js');
   const boards = {};
-  for (const f of fs.readdirSync(path.join(ROOT, 'Level'))) {
+  for (const f of fs.readdirSync(path.join(ROOT, 'Catalog'))) {
     const m2 = f.match(/^catalog-b(\d+)(w2)?\.json$/);
     if (!m2) continue;
-    const cat = JSON.parse(fs.readFileSync(path.join(ROOT, 'Level', f), 'utf8'));
+    const cat = JSON.parse(fs.readFileSync(path.join(ROOT, 'Catalog', f), 'utf8'));
     if (!boards[m2[1]]) boards[m2[1]] = [];
     boards[m2[1]].push(...cat.entries.map(r => {
       const ws = r.walls || (r.wall ? [r.wall] : []);
@@ -119,8 +119,8 @@ if (args.includes('--build')) {
     }
   }
   const suffix = wallsN === 2 ? 'w2' : '';
-  const mainFile = path.join(ROOT, 'Level', `catalog-b${N}${suffix}.json`);
-  const file = shard ? path.join(ROOT, 'Level', `catalog-b${N}${suffix}.shard${shardI}.json`) : mainFile;
+  const mainFile = path.join(ROOT, 'Catalog', `catalog-b${N}${suffix}.json`);
+  const file = shard ? path.join(ROOT, 'Catalog', `catalog-b${N}${suffix}.shard${shardI}.json`) : mainFile;
   const wallsOf = r => r.walls || (r.wall ? [r.wall] : []);
   const rkey = r => `${r.combat}|${r.enemy[0]},${r.enemy[1]}|${wallsOf(r).length ? wallsOf(r).map(wKey).join('|') : '-'}`;
   // 이어하기 규칙: min 확정 항목은 유지. min null(cap 초과·타임아웃) 항목은
@@ -188,12 +188,12 @@ if (args.includes('--build')) {
   // 샤드 파일들을 본 카탈로그로 병합: min 확정 > 높은 cap의 null 순으로 우선. --walls 2 는 w2 파일 대상.
   const N = parseInt(opt('--merge'), 10);
   const suffix = parseInt(opt('--walls', '1'), 10) === 2 ? 'w2' : '';
-  const mainFile = path.join(ROOT, 'Level', `catalog-b${N}${suffix}.json`);
+  const mainFile = path.join(ROOT, 'Catalog', `catalog-b${N}${suffix}.json`);
   const wallsOf = r => r.walls || (r.wall ? [r.wall] : []);
   const rkey = r => `${r.combat}|${r.enemy[0]},${r.enemy[1]}|${wallsOf(r).length ? wallsOf(r).map(wKey).join('|') : '-'}`;
   const best = new Map();
   const rank = r => (r.min !== null ? 1e9 : (r.cap || 0));
-  const files = [mainFile, ...fs.readdirSync(path.join(ROOT, 'Level')).filter(f => f.startsWith(`catalog-b${N}${suffix}.shard`)).map(f => path.join(ROOT, 'Level', f))];
+  const files = [mainFile, ...fs.readdirSync(path.join(ROOT, 'Catalog')).filter(f => f.startsWith(`catalog-b${N}${suffix}.shard`)).map(f => path.join(ROOT, 'Catalog', f))];
   let maxCap = 0, runsV = 800;
   for (const f of files) {
     if (!fs.existsSync(f)) continue;
@@ -214,7 +214,7 @@ if (args.includes('--build')) {
 } else if (args.includes('--query')) {
   const N = parseInt(opt('--query'), 10);
   const suffix = parseInt(opt('--walls', '1'), 10) === 2 ? 'w2' : '';
-  const file = path.join(ROOT, 'Level', `catalog-b${N}${suffix}.json`);
+  const file = path.join(ROOT, 'Catalog', `catalog-b${N}${suffix}.json`);
   const cat = JSON.parse(fs.readFileSync(file, 'utf8'));
   let rows = cat.entries;
   if (args.includes('--combat')) rows = rows.filter(r => r.combat === (opt('--combat') === 'true'));

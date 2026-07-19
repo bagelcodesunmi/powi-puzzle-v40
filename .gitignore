@@ -1,3 +1,4 @@
 *.log
 *-backup.html
 Level/*.shard*.json
+Catalog/*.shard*.json

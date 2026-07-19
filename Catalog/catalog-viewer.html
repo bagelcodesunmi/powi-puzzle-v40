@@ -39,7 +39,7 @@
 </head>
 <body>
 <h1>레벨 후보 카탈로그 뷰어</h1>
-<div class="sub">적 1기 + edge wall 0~1개 전수 카탈로그 (<code>Level/catalog-b*.json</code> — 생성: <code>node catalog-walls.js --build N</code>) · 좌표는 대칭 대표형, 카드 클릭 → 미러 변형·JSON</div>
+<div class="sub">적 1기 + edge wall 0~2개 전수 카탈로그 (<code>Catalog/catalog-b*.json</code> — 생성: <code>node catalog-walls.js --build N</code>) · 좌표는 대칭 대표형, 카드 클릭 → 미러 변형·JSON</div>
 <div id="err" class="err" style="display:none"></div>
 <div class="bar">
   <label>보드 <select id="fBoard"><option value="4">4×4</option><option value="3">3×3</option><option value="5">5×5</option></select></label>
@@ -88,9 +88,9 @@ async function loadAll() {
   for (const n of boards) {
     let got = [];
     let fetched = false;
-    for (const suffix of ['', 'w2']) {          // 벽 0~1개(b{N}) + 벽 2개(b{N}w2)
+    for (const suffix of ['', 'w2']) {          // 벽 0~1개(b{N}) + 벽 2개(b{N}w2) — 데이터는 같은 폴더(Catalog/)
       try {
-        const res = await fetch('Level/catalog-b' + n + suffix + '.json');
+        const res = await fetch('catalog-b' + n + suffix + '.json');
         if (!res.ok) throw new Error(res.status);
         got.push(...(await res.json()).entries);
         fetched = true;
@@ -106,9 +106,9 @@ async function loadAll() {
       ? '<b>catalog-snapshot.js를 찾지 못했습니다.</b> 이 파일은 <code>catalog-viewer.html</code>과 <b>같은 폴더</b>에 있어야 합니다 — ' +
         '뷰어를 복사했다면 두 파일을 함께 옮기세요. (프로젝트 폴더에서 <code>node catalog-walls.js --sync-viewer</code>로 재생성 가능)'
       : 'catalog 데이터가 없습니다. <code>node catalog-walls.js --build 4</code> 등으로 생성한 뒤 ' +
-        '<code>node catalog-walls.js --sync-viewer</code>를 실행하세요. 서버(localhost/미리보기)로 열면 <code>Level/catalog-b*.json</code>을 실시간으로 읽습니다.') +
+        '<code>node catalog-walls.js --sync-viewer</code>를 실행하세요. 서버(localhost/미리보기)로 열면 같은 폴더의 <code>catalog-b*.json</code>을 실시간으로 읽습니다.') +
       '<div style="margin-top:10px">또는 카탈로그 json을 직접 열기: <input type="file" id="pick" accept=".json" multiple style="font-size:12px"> ' +
-      '<span style="color:#8a877e">(Level/catalog-b*.json 파일들을 선택 — 창에 드래그해도 됩니다)</span></div>';
+      '<span style="color:#8a877e">(Catalog/catalog-b*.json 파일들을 선택 — 창에 드래그해도 됩니다)</span></div>';
     const ingest = async files => {
       for (const f of files) {
         try {
