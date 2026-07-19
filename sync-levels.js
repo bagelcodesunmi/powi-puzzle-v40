@@ -33,10 +33,17 @@ for (const s of saves) {
 
 const xyArr = a => '[' + (a || []).map(w => `[${w.x},${w.y}]`).join(',') + ']';
 const xyObj = a => '[' + (a || []).map(w => `{ x: ${w.x}, y: ${w.y} }`).join(', ') + ']';
+// 적 항목: 기본 [x,y] · hp2/개체 combat이 있으면 [x,y,hp] / [x,y,hp,combat(0/1)] (게임 loadLevel 파서와 일치)
+const foeArr = a => '[' + (a || []).map(e => {
+  const t = [e.x, e.y];
+  if (e.hp === 2 || e.combat !== undefined) t.push(e.hp === 2 ? 2 : 1);
+  if (e.combat !== undefined) t.push(e.combat ? 1 : 0);
+  return `[${t.join(',')}]`;
+}).join(',') + ']';
 
 // ── 게임 LEVELS 라인 ──
 function gameLine(s) {
-  const p = [`board: ${s.board}`, `enemies: ${xyArr(s.enemies)}`];
+  const p = [`board: ${s.board}`, `enemies: ${foeArr(s.enemies)}`];
   if (s.walls && s.walls.length) p.push(`walls: [${s.walls.map(w => `[${w.x},${w.y},${w.hp}]`).join(',')}]`);
   if (s.rightWalls && s.rightWalls.length) p.push(`rightWalls: ${xyArr(s.rightWalls)}`);
   if (s.downWalls && s.downWalls.length) p.push(`downWalls: ${xyArr(s.downWalls)}`);
