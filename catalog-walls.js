@@ -18,37 +18,40 @@ const LAB = path.join(ROOT, 'level-lab.html');
 
 let code = fs.readFileSync(LAB, 'utf8').match(/<script type="text\/worker" id="workerSrc">([\s\S]*?)<\/script>/)[1];
 code = code.replace(/const P = t => self\.postMessage[\s\S]*$/, '');
+// 대량 배치용 메모 상한 축소 (정확성 불변 — 캐시 크기만 줄임): 병렬 샤드에서 메모리 스래싱으로
+// 타임아웃 체크(3만 노드 주기)가 수 시간씩 밀리는 문제 방지 (2026-07-19)
+code = code.replace('memo.size < 4000000', 'memo.size < 400000');
 const eng = new Function('self', code + 'return { solveMin, mcStats };')({ postMessage() {} });
 
 const args = process.argv.slice(2);
 const opt = (name, def) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : def; };
 
-// 카탈로그 스냅샷을 catalog-viewer.html에 굽는다 (file:// 더블클릭 지원 — sync-levels.js와 같은 패턴)
+// 카탈로그 스냅샷을 catalog-snapshot.js로 굽는다 (file:// 더블클릭 지원 — <script src>는 file://에서도 로드됨).
+// 압축 배열 포맷: [combat, ex, ey, wallsStr('d2,1|r0,0'), min(-1=null), bot(-1=없음), median(-1), flags(1=차폐,2=타임아웃)]
 function syncViewer() {
-  const VIEWER = path.join(ROOT, 'catalog-viewer.html');
-  if (!fs.existsSync(VIEWER)) return;
-  const snap = { builtAt: new Date().toISOString() };
+  const OUT = path.join(ROOT, 'catalog-snapshot.js');
+  const boards = {};
   for (const f of fs.readdirSync(path.join(ROOT, 'Level'))) {
     const m2 = f.match(/^catalog-b(\d+)(w2)?\.json$/);
     if (!m2) continue;
     const cat = JSON.parse(fs.readFileSync(path.join(ROOT, 'Level', f), 'utf8'));
-    if (!snap[m2[1]]) snap[m2[1]] = { cap: cat.cap, runs: cat.runs, entries: [] };
-    // 스냅샷은 뷰어 표시에 필요한 필드만 (solveMs·cap 제외 — 파일 크기 절약)
-    snap[m2[1]].entries.push(...cat.entries.map(r => {
-      const o = { board: r.board, combat: r.combat, enemy: r.enemy, min: r.min };
-      if (r.walls) o.walls = r.walls; else if (r.wall) o.wall = r.wall;
-      if (r.bot !== undefined) { o.bot = r.bot; o.botMedian = r.botMedian; }
-      if (r.shieldedCorner) o.shieldedCorner = true;
-      if (r.timedOut) o.timedOut = true;
-      return o;
+    if (!boards[m2[1]]) boards[m2[1]] = [];
+    boards[m2[1]].push(...cat.entries.map(r => {
+      const ws = r.walls || (r.wall ? [r.wall] : []);
+      return [
+        r.combat ? 1 : 0, r.enemy[0], r.enemy[1],
+        ws.map(w => w.type + w.x + ',' + w.y).join('|'),
+        r.min ?? -1,
+        r.bot !== undefined ? r.bot : -1,
+        r.botMedian ?? -1,
+        (r.shieldedCorner ? 1 : 0) | (r.timedOut ? 2 : 0),
+      ];
     }));   // 벽1(b{N})·벽2(b{N}w2) 병합
   }
-  let html = fs.readFileSync(VIEWER, 'utf8');
-  const re = /(\/\/ ▼ SNAPSHOT-BEGIN[^\n]*\n)[\s\S]*?(\n\/\/ ▲ SNAPSHOT-END)/;
-  if (!re.test(html)) { console.warn('viewer 스냅샷 마커를 못 찾음 — 건너뜀'); return; }
-  html = html.replace(re, `$1const SNAPSHOT = ${JSON.stringify(snap)};$2`);
-  fs.writeFileSync(VIEWER, html);
-  console.log(`viewer 스냅샷 갱신: catalog-viewer.html (보드 ${Object.keys(snap).filter(k => k !== 'builtAt').join(', ')})`);
+  const snap = { builtAt: new Date().toISOString(), boards };
+  fs.writeFileSync(OUT, `// AUTO-GENERATED — node catalog-walls.js --sync-viewer 로 재생성. 직접 편집 금지.\nwindow.CATALOG_SNAPSHOT = ${JSON.stringify(snap)};\n`);
+  const kb = (fs.statSync(OUT).size / 1024).toFixed(0);
+  console.log(`viewer 스냅샷 갱신: catalog-snapshot.js (${kb}KB, 보드 ${Object.keys(boards).join(', ')})`);
 }
 
 // ── 대칭 정규화: D4 8변형에서 최소 직렬화를 대표형으로 ──

@@ -89,8 +89,9 @@ node verify-level.js '<cfg>' --winmove '{"stones":[[1,2]],"budget":3,"ann":[1,3]
 ### `catalog-viewer.html` — 카탈로그 시각 탐색 GUI (2026-07-18 신규)
 `Level/catalog-b*.json`을 읽어 후보를 **보드 미리보기 카드**로 보여준다.
 - **서버(localhost/미리보기)로 열면** json 실시간 로드 (항상 최신).
-- **더블클릭(file://)도 지원**: HTML에 구워진 스냅샷으로 표시 (게임·감정곡선과 같은 패턴).
+- **더블클릭(file://)도 지원**: 같은 폴더의 `catalog-snapshot.js`(압축 스냅샷, `<script src>`는 file://에서도 로드됨)로 표시.
   스냅샷은 `--build`/`--merge` 시 자동 갱신되고, 수동 갱신은 `node catalog-walls.js --sync-viewer`.
+  다른 곳으로 복사할 땐 **viewer html + snapshot js 두 파일을 함께** 옮길 것.
 - 필터: 보드(3/4/5) · 전투 · min · 예고봇 대역(90%+/40~80/40미만) · 차폐 코너 포함 여부(기본 제외)
 - 정렬: min ↑ / 예고봇 ↓·↑
 - 카드 클릭 → 상세 패널: **좌우/상하 미러 변형 미리보기**(게임 미러링이 보여줄 4방향 확인) + 레벨 JSON 복사
