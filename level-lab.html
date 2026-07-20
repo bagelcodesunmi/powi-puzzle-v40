@@ -31,6 +31,7 @@
           display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; cursor: pointer; user-select: none; }
   .cell.enemy { background: var(--enemy); color: #fff; }
   .cell.wall { background: var(--stone); color: var(--ink); }
+  .cell.grayhint { background: #4a463e; opacity: .75; }   /* 회색칸(시각 힌트 전용) */
   .actions { display: flex; gap: 10px; margin-bottom: 14px; }
   .btn { border: 0; border-radius: 10px; padding: 11px 22px; font-size: 14px; font-weight: 800; cursor: pointer; }
   .btn.primary { background: var(--stone); color: var(--ink); }
@@ -156,6 +157,7 @@
       <button data-m="dwall">경계벽 ▁</button>
       <button data-m="crwall">금간벽 ▏</button>
       <button data-m="cdwall">금간벽 ▁</button>
+      <button data-m="gray">회색칸</button>
       <button data-m="wall">돌벽</button>
     </div>
     <!-- 내 돌 HP 선택기: 항상 1 고정 (2026-07-19 Director — HP 상승은 추후 아이템 시스템으로). 엔진·데이터 호환은 유지 -->
@@ -851,6 +853,7 @@ let rightWalls = [];   // {x, y} — (x,y)↔(x+1,y) 경계벽
 let downWalls = [];    // {x, y} — (x,y)↔(x,y+1) 경계벽
 let crackedRight = []; // {x, y} — 금 간 경계벽(세로): 적만 부술 수 있는 1히트 벽
 let crackedDown = [];  // {x, y} — 금 간 경계벽(가로)
+let grayCells = [];    // {x, y} — 회색칸: 시각 힌트 전용(여기 두면 턴 낭비 표시). 규칙·솔버에 관여하지 않음
 let worker = null;
 
 const CELL = 48, GAP = 6;   // .cell 크기·#board gap과 일치해야 함
@@ -867,6 +870,7 @@ function renderBoard() {
     d.className = 'cell';
     const e = enemies.find(e => e.x === x && e.y === y);
     const w = walls.find(w => w.x === x && w.y === y);
+    if (grayCells.some(g => g.x === x && g.y === y)) d.classList.add('grayhint');
     if (e) {
       d.classList.add('enemy');
       d.textContent = e.hp === 2 ? '적2' : '적';
@@ -897,6 +901,10 @@ function renderBoard() {
           if (j >= 0) downWalls.splice(j, 1);
           toggleIn(crackedDown, x, y);
         }
+        renderBoard(); return;
+      }
+      if (mode === 'gray') {                                    // 회색칸: 시각 힌트 토글 (적/벽과 공존 가능)
+        toggleIn(grayCells, x, y);
         renderBoard(); return;
       }
       const ei = enemies.findIndex(e => e.x === x && e.y === y);
@@ -963,6 +971,7 @@ document.getElementById('sizeSeg').onclick = e => {
   downWalls = downWalls.filter(w => w.x < N && w.y < N - 1);
   crackedRight = crackedRight.filter(w => w.x < N - 1 && w.y < N);
   crackedDown = crackedDown.filter(w => w.x < N && w.y < N - 1);
+  grayCells = grayCells.filter(g => g.x < N && g.y < N);
   [...e.currentTarget.children].forEach(b => b.classList.toggle('on', b === e.target));
   renderBoard();
 };
@@ -989,7 +998,7 @@ document.getElementById('hpSeg').onclick = e => {
   stoneHp = +e.target.dataset.p;
   [...e.currentTarget.children].forEach(b => b.classList.toggle('on', b === e.target));
 };
-document.getElementById('clearBtn').onclick = () => { enemies = []; walls = []; rightWalls = []; downWalls = []; crackedRight = []; crackedDown = []; renderBoard(); };
+document.getElementById('clearBtn').onclick = () => { enemies = []; walls = []; rightWalls = []; downWalls = []; crackedRight = []; crackedDown = []; grayCells = []; renderBoard(); };
 
 // ---------- 배치 모드 ----------
 const PLACE_HINT = {
@@ -998,6 +1007,7 @@ const PLACE_HINT = {
   dwall: '경계벽(가로) — 칸을 탭하면 그 칸의 아래 경계에 벽 토글. 놓인 벽을 직접 탭해도 제거됩니다',
   crwall: '금 간 벽(세로) — 적만 부술 수 있는 1히트 경계벽. 인접한 적은 그 턴 확산 대신 이 벽을 부숩니다 (판당 ≤3 권장)',
   cdwall: '금 간 벽(가로) — 적만 부술 수 있는 1히트 경계벽. 같은 경계에 일반벽과 중복 배치 불가',
+  gray: '회색칸 — 시각 힌트 전용. "여기 두면 턴 낭비"를 회색으로 표시합니다. 배치·확산·솔버에는 영향 없음 (기준: 적이 확산 상한 안에 절대 도달 못 하는 칸)',
   wall: '칸 점유 돌벽(구형) — HP를 고르고 칸을 탭하세요. 반격 화살 1발당 1씩 깎입니다 (0 = 파괴)',
 };
 function syncModeUI() {
@@ -1047,18 +1057,18 @@ const msg = t => { saveMsg.textContent = t; };
 // 최초 1회만 저장 목록에 추가된다 (지우면 다시 생기지 않음). 게임 레벨 데이터가 바뀌면 여기도 갱신할 것.
 const PRESETS = [
   // ▼ AUTO-GENERATED — Level/levels.json 에서 생성됨. 직접 편집 금지. 재생성: node sync-levels.js
-  { name: 'Game L1', board: 3, combat: false, hp: 1, mirror: false, enemies: [{ x: 1, y: 1 }], walls: [], rightWalls: [{ x: 0, y: 1 }, { x: 1, y: 1 }], downWalls: [{ x: 1, y: 0 }] },
-  { name: 'Game L2', board: 3, combat: false, hp: 1, mirror: false, enemies: [{ x: 1, y: 0 }], walls: [], rightWalls: [{ x: 1, y: 0 }], downWalls: [] },
-  { name: 'Game L3', board: 4, combat: false, hp: 1, mirror: false, enemies: [{ x: 1, y: 2 }], walls: [], rightWalls: [{ x: 0, y: 2 }], downWalls: [{ x: 1, y: 1 }] },
-  { name: 'Game L4', board: 4, combat: false, hp: 1, mirror: false, enemies: [{ x: 0, y: 0 }, { x: 2, y: 0 }], walls: [], rightWalls: [{ x: 2, y: 0 }], downWalls: [{ x: 2, y: 0 }] },
-  { name: 'Game L5', board: 5, combat: false, hp: 1, mirror: true, enemies: [{ x: 4, y: 2 }], walls: [], rightWalls: [{ x: 3, y: 0 }, { x: 3, y: 2 }], downWalls: [] },
-  { name: 'Game L6', board: 5, combat: true, hp: 1, mirror: false, enemies: [{ x: 2, y: 2 }], walls: [], rightWalls: [{ x: 1, y: 2 }, { x: 2, y: 2 }], downWalls: [{ x: 2, y: 1 }] },
-  { name: 'Game L7', board: 5, combat: true, hp: 1, mirror: true, enemies: [{ x: 1, y: 0 }], walls: [], rightWalls: [{ x: 1, y: 0 }], downWalls: [] },
-  { name: 'Game L8', board: 5, combat: true, hp: 1, mirror: true, enemies: [{ x: 4, y: 2 }], walls: [], rightWalls: [{ x: 3, y: 0 }, { x: 3, y: 2 }], downWalls: [] },
-  { name: 'Game L9', board: 5, combat: true, hp: 1, mirror: true, enemies: [{ x: 1, y: 3 }], walls: [], rightWalls: [], downWalls: [{ x: 1, y: 2 }] },
-  { name: 'Game L10', board: 5, combat: true, hp: 1, mirror: true, enemies: [{ x: 1, y: 2 }], walls: [], rightWalls: [], downWalls: [{ x: 1, y: 2 }] },
+  { name: 'Game L1', board: 3, combat: false, hp: 1, mirror: false, enemies: [{ x: 1, y: 1 }], walls: [], rightWalls: [{ x: 0, y: 1 }, { x: 1, y: 1 }], downWalls: [{ x: 1, y: 0 }], grayCells: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 1 }, { x: 2, y: 1 }, { x: 0, y: 2 }, { x: 2, y: 2 }] },
+  { name: 'Game L2', board: 3, combat: false, hp: 1, mirror: false, enemies: [{ x: 1, y: 0 }], walls: [], rightWalls: [{ x: 1, y: 0 }], downWalls: [], grayCells: [{ x: 2, y: 0 }, { x: 0, y: 2 }, { x: 2, y: 2 }] },
+  { name: 'Game L3', board: 4, combat: false, hp: 1, mirror: false, enemies: [{ x: 1, y: 2 }], walls: [], rightWalls: [{ x: 0, y: 2 }], downWalls: [{ x: 1, y: 1 }], grayCells: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 3, y: 0 }, { x: 0, y: 1 }] },
+  { name: 'Game L4', board: 4, combat: false, hp: 1, mirror: false, enemies: [{ x: 0, y: 0 }, { x: 2, y: 0 }], walls: [], rightWalls: [{ x: 2, y: 0 }], downWalls: [{ x: 2, y: 0 }], grayCells: [{ x: 3, y: 0 }, { x: 3, y: 2 }, { x: 2, y: 3 }, { x: 3, y: 3 }] },
+  { name: 'Game L5', board: 5, combat: false, hp: 1, mirror: true, enemies: [{ x: 4, y: 2 }], walls: [], rightWalls: [{ x: 3, y: 0 }, { x: 3, y: 2 }], downWalls: [], grayCells: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 0, y: 2 }, { x: 1, y: 2 }, { x: 2, y: 2 }, { x: 0, y: 3 }, { x: 1, y: 3 }, { x: 0, y: 4 }, { x: 1, y: 4 }, { x: 2, y: 4 }] },
+  { name: 'Game L6', board: 5, combat: true, hp: 1, mirror: false, enemies: [{ x: 2, y: 2 }], walls: [], rightWalls: [{ x: 1, y: 2 }, { x: 2, y: 2 }], downWalls: [{ x: 2, y: 1 }], grayCells: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 2, y: 1 }, { x: 3, y: 1 }, { x: 4, y: 1 }, { x: 0, y: 2 }, { x: 1, y: 2 }, { x: 3, y: 2 }, { x: 4, y: 2 }, { x: 0, y: 3 }, { x: 1, y: 3 }, { x: 3, y: 3 }, { x: 4, y: 3 }, { x: 0, y: 4 }, { x: 1, y: 4 }, { x: 2, y: 4 }, { x: 3, y: 4 }, { x: 4, y: 4 }] },
+  { name: 'Game L7', board: 5, combat: true, hp: 1, mirror: true, enemies: [{ x: 1, y: 0 }], walls: [], rightWalls: [{ x: 1, y: 0 }], downWalls: [], grayCells: [{ x: 2, y: 0 }, { x: 3, y: 0 }, { x: 4, y: 0 }, { x: 3, y: 1 }, { x: 4, y: 1 }, { x: 0, y: 2 }, { x: 2, y: 2 }, { x: 3, y: 2 }, { x: 4, y: 2 }, { x: 0, y: 3 }, { x: 1, y: 3 }, { x: 2, y: 3 }, { x: 3, y: 3 }, { x: 4, y: 3 }, { x: 0, y: 4 }, { x: 1, y: 4 }, { x: 2, y: 4 }, { x: 3, y: 4 }, { x: 4, y: 4 }] },
+  { name: 'Game L8', board: 5, combat: true, hp: 1, mirror: true, enemies: [{ x: 4, y: 2 }], walls: [], rightWalls: [{ x: 3, y: 0 }, { x: 3, y: 2 }], downWalls: [], grayCells: [{ x: 0, y: 0 }, { x: 1, y: 0 }, { x: 2, y: 0 }, { x: 0, y: 1 }, { x: 1, y: 1 }, { x: 0, y: 2 }, { x: 1, y: 2 }, { x: 2, y: 2 }, { x: 0, y: 3 }, { x: 1, y: 3 }, { x: 0, y: 4 }, { x: 1, y: 4 }, { x: 2, y: 4 }] },
+  { name: 'Game L9', board: 5, combat: true, hp: 1, mirror: false, enemies: [{ x: 1, y: 2 }], walls: [], rightWalls: [{ x: 1, y: 2 }], downWalls: [{ x: 1, y: 0 }], grayCells: [{ x: 4, y: 0 }, { x: 4, y: 2 }, { x: 4, y: 4 }] },
+  { name: 'Game L10', board: 5, combat: true, hp: 1, mirror: true, enemies: [{ x: 1, y: 2 }], walls: [], rightWalls: [{ x: 0, y: 2 }, { x: 1, y: 2 }], downWalls: [{ x: 1, y: 0 }] },
 ];
-const PRESET_VER = 17;              // 프리셋 추가/변경 시 +1 — 기존 사용자에게도 새 프리셋이 1회 주입된다
+const PRESET_VER = 20;              // 프리셋 추가/변경 시 +1 — 기존 사용자에게도 새 프리셋이 1회 주입된다
 let presetVer = 0;
 function seedPresets() {
   // 버전 올라가면 프리셋(게임 레벨 사본)을 최신 데이터로 갱신 — 이름 일치 항목은 덮어쓰고, 없으면 맨 앞에 추가.
@@ -1099,6 +1109,7 @@ function migrate(s) {  // 구버전(성향·요새화·열매·HP3) 저장 호�
   out.downWalls = Array.isArray(s.downWalls) ? s.downWalls.map(w => ({ x: w.x, y: w.y })) : [];
   out.crackedRightWalls = Array.isArray(s.crackedRightWalls) ? s.crackedRightWalls.map(w => ({ x: w.x, y: w.y })) : [];
   out.crackedDownWalls = Array.isArray(s.crackedDownWalls) ? s.crackedDownWalls.map(w => ({ x: w.x, y: w.y })) : [];
+  out.grayCells = Array.isArray(s.grayCells) ? s.grayCells.map(g => ({ x: g.x, y: g.y })) : [];
   out.mirror = s.mirror !== false;
   out.setBudget = Number.isInteger(s.setBudget) && s.setBudget > 0 ? s.setBudget : null;
   return out;
@@ -1146,6 +1157,7 @@ function currentConfig(name) {
            enemies: enemies.map(e => ({ ...e })), walls: walls.map(w => ({ ...w })),
            rightWalls: rightWalls.map(w => ({ ...w })), downWalls: downWalls.map(w => ({ ...w })),
            crackedRightWalls: crackedRight.map(w => ({ ...w })), crackedDownWalls: crackedDown.map(w => ({ ...w })),
+           grayCells: grayCells.map(g => ({ ...g })),
            savedAt: Date.now() };
 }
 function applyConfig(s) {
@@ -1156,6 +1168,7 @@ function applyConfig(s) {
   downWalls = (s.downWalls || []).map(w => ({ ...w }));
   crackedRight = (s.crackedRightWalls || []).map(w => ({ ...w }));
   crackedDown = (s.crackedDownWalls || []).map(w => ({ ...w }));
+  grayCells = (s.grayCells || []).map(g => ({ ...g }));
   [...document.getElementById('sizeSeg').children].forEach(b => b.classList.toggle('on', +b.dataset.n === N));
   [...document.getElementById('combatSeg').children].forEach(b => b.classList.toggle('on', b.dataset.c === (combat ? '1' : '0')));
   [...document.getElementById('hpSeg').children].forEach(b => b.classList.toggle('on', +b.dataset.p === stoneHp));
@@ -1268,6 +1281,7 @@ document.getElementById('writeGameBtn').onclick = async () => {
         name: s.name, board: s.board, combat: s.combat, hp: s.hp || 1, mirror: s.mirror !== false,
         setBudget: s.setBudget ?? null,
         enemies: s.enemies, walls: s.walls || [], rightWalls: s.rightWalls || [], downWalls: s.downWalls || [],
+        grayCells: s.grayCells || [],
         schedule: (sameGeom && old.schedule && old.min === min) ? old.schedule : Array(min || 1).fill(1),
         spread: old ? old.spread !== false : true,
         min, exactBudget: old && typeof old.exactBudget === 'boolean' ? old.exactBudget : true,

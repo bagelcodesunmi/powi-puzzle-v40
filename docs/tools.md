@@ -33,7 +33,7 @@
 | **신규 레벨 후보 탐색 (적1+벽≤2 전수 카탈로그)** | `node catalog-walls.js --query N [조건]` — 아래 상세 참조 |
 | **카탈로그 시각 탐색 (보드 미리보기·필터·미러 변형)** | `catalog-viewer.html` (루트, 더블클릭 또는 서버 — 데이터는 Catalog/) |
 | **레벨 헤드리스 검증 (§14 ①~③ 자동화, CLI)** | `node verify-level.js '<cfg>' [--exact --seeds --winmove]` — 아래 상세 참조 |
-| 레벨 설계·검증 GUI (edge wall 포함) | `level-lab.html` (브라우저) |
+| 레벨 설계·검증 GUI (edge wall 포함) | `level-lab.html` (브라우저) — 배치 모드에 **회색칸** 브러시(시각 힌트 전용, `grayCells`) 포함 |
 | 게임 플레이 확인 | `powi-puzzle.html` (브라우저) |
 | 난이도·감정 페이싱 확인 | `emotion-curve.html` (브라우저) — 예산 계단·예고봇 승률·감정 구간(도파민/스트레스/학습/전환점)을 json에서 자동 렌더링. 감정 태그는 json의 `emotion`/`tag`/`winRate` 필드로 편집 |
 | 반복·지루함 위험 점검 | `emotion-curve.html` 의 **🔁 반복 경보** 섹션 — 적 위치(D4 미러 정규화)·판 구조·**구조 이식**(보드 크기만 다른 같은 로컬 패턴, 가장자리 거리 시그니처 포함)·감정 3연속을 점수화(직전 3레벨 창). **반복 상대와** 감정 반전 시 -1 완화(직전 레벨 아님). 점수 2↑ 주의·4↑ 높음. 새 레벨 추가 시 확인 (반복·다양성 정책: `curve-design-150.md`) |
