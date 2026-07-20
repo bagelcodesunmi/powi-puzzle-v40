@@ -97,8 +97,9 @@ function blockedBetween(x1, y1, x2, y2) {
 // [v40] 기본 내구도 1 — 반격 1발 = 벽 즉시 파괴 (승리 경로 축소로 난도 확보).
 //       확산형 2기는 내구도 1에서 구조적 발산(검증) → 2기 레벨(15)만 hp:2 플래그로 내구도 2.
 // ===== mulberry32 시드 PRNG =====
-// 레벨 내 모든 랜덤(미러링·확산·파티클)이 이 PRNG를 사용한다.
-// 시드가 고정되면 같은 플레이 조건에서 항상 동일한 적 행동이 재현된다.
+// [분리 원칙] 로직(미러링·확산)만 시드 PRNG(prng)를 쓴다. 연출(파티클·흔들림)은 fxRng(비시드)로 분리.
+//   → 파티클이 시드 PRNG를 소비하지 않으므로, 중간 포획(연출 발생)이 있어도 확산 경로가
+//     검증 도구(verify-level·레벨랩 워커)와 항상 일치한다. 시드 고정 시 확산·미러링 재현성 유지.
 function mulberry32(seed) {
   return function() {
     seed |= 0; seed = seed + 0x6D2B79F5 | 0;
@@ -107,7 +108,8 @@ function mulberry32(seed) {
     return ((z ^ z >>> 14) >>> 0) / 4294967296;
   };
 }
-let prng = Math.random;   // 레벨 로드 시 교체됨
+let prng = Math.random;   // 로직 전용(미러링·확산). 레벨 로드 시 시드 PRNG로 교체됨
+let fxRng = Math.random;  // 연출 전용(파티클·흔들림). 시드에 묶이지 않음 — 확산 재현성에 영향 없음
 let currentSeed = 0;      // 현재 레벨에서 사용 중인 시드
 
 const EMPTY = 0, ENEMY = -1;
@@ -453,12 +455,12 @@ function spawnBurst(c) {
   const x = c % N, y = (c / N) | 0;
   const px = pad + (x + .5) * cell, py = pad + (y + .5) * cell;
   for (let k = 0; k < 8; k++) {
-    const a = prng() * Math.PI * 2;
-    const sp = cell * (2 + prng() * 4);
+    const a = fxRng() * Math.PI * 2;
+    const sp = cell * (2 + fxRng() * 4);
     particles.push({
       x: px, y: py,
       vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - cell * 2,
-      t: 1, s: cell * (0.1 + prng() * 0.12),
+      t: 1, s: cell * (0.1 + fxRng() * 0.12),
     });
   }
 }
