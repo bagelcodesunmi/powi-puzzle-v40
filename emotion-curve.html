@@ -78,6 +78,16 @@
   <div id="rateChart"></div>
 </div>
 
+<div class="rate-chart" id="repeatWrap">
+  <h2>🔁 반복 경보 (지루함 위험 — 적 위치·구조·감정 반복)</h2>
+  <div class="sub" style="margin-bottom:12px">
+    적 위치는 <b>미러 정규화</b>(좌우·상하·회전 8방향 중 대표형)로 비교 — 미러링으로 가려지는 반복까지 잡는다.
+    창(window) = 직전 3레벨. 위험도: <span style="color:var(--stress)">■ 높음</span> ·
+    <span style="color:var(--warn)">■ 주의</span> · <span style="color:var(--dopamine)">■ 양호</span>.
+  </div>
+  <div id="repeatChart"></div>
+</div>
+
 <div class="sections" id="sections"></div>
 
 <div class="note">
@@ -103,6 +113,100 @@ const LEVELS = [
 ];
 
 const COLOR = { dopamine: 'var(--dopamine)', stress: 'var(--stress)', neutral: 'var(--neutral)', warn: 'var(--warn)' };
+
+// ===== 반복 경보 지표 =====
+// 목적: "같은 위치에 적이 나오거나 비슷한 턴/구조가 연속되면 지루하다"를 정량화.
+// 미러링으로 가려지는 반복까지 잡기 위해 적 위치를 8방향 대칭(D4) 정규화한 canonical 형태로 비교한다.
+const WINDOW = 3; // 직전 몇 레벨까지 비교할지
+
+// 보드 N×N에서 좌표 리스트를 8가지 대칭(항등·좌우·상하·180·전치 4종)으로 변환 후 사전순 최소형을 대표로.
+function canonicalCells(cells, N) {
+  const norm = (pts) => pts.map(([x, y]) => x + ',' + y).sort().join(';');
+  const syms = [
+    ([x, y]) => [x, y],
+    ([x, y]) => [N - 1 - x, y],           // 좌우
+    ([x, y]) => [x, N - 1 - y],           // 상하
+    ([x, y]) => [N - 1 - x, N - 1 - y],   // 180
+    ([x, y]) => [y, x],                   // 전치
+    ([x, y]) => [N - 1 - y, x],           // 회전90
+    ([x, y]) => [y, N - 1 - x],           // 회전270
+    ([x, y]) => [N - 1 - y, N - 1 - x],   // 반전전치
+  ];
+  let best = null;
+  for (const f of syms) {
+    const key = norm(cells.map(f));
+    if (best === null || key < best) best = key;
+  }
+  return best;
+}
+
+function enemyCells(l) { return (l.enemies || []).map(e => [e.x, e.y]); }
+// 구조 = 적 + 경계벽(오른/아래) 전부를 하나의 canonical 형태로 (벽까지 같으면 "판 재사용")
+function structureKey(l) {
+  const N = l.board;
+  const tag = (arr, t) => (arr || []).map(w => [w.x, w.y, t]);
+  const all = [...enemyCells(l).map(([x, y]) => [x, y, 'e']),
+               ...tag(l.rightWalls, 'r'), ...tag(l.downWalls, 'd')];
+  // D4 정규화 (좌표만 변환, 태그 보존)
+  const norm = (pts) => pts.map(p => p.join(',')).sort().join(';');
+  const N1 = N - 1;
+  const syms = [
+    (x, y) => [x, y], (x, y) => [N1 - x, y], (x, y) => [x, N1 - y], (x, y) => [N1 - x, N1 - y],
+    (x, y) => [y, x], (x, y) => [N1 - y, x], (x, y) => [y, N1 - x], (x, y) => [N1 - y, N1 - x],
+  ];
+  let best = null;
+  for (const f of syms) {
+    const key = 'b' + N + '|' + norm(all.map(([x, y, t]) => [...f(x, y), t]));
+    if (best === null || key < best) best = key;
+  }
+  return best;
+}
+
+// 각 레벨의 반복 위험도 계산 → {level, posRepeat, structRepeat, emotionRun, mirrorSame, score, reasons}
+function analyzeRepeats(games) {
+  const out = [];
+  for (let i = 0; i < games.length; i++) {
+    const l = games[i];
+    const myPos = canonicalCells(enemyCells(l), l.board);
+    const myStruct = structureKey(l);
+    const reasons = [];
+    let score = 0;
+
+    // 창 안(직전 WINDOW개) 비교
+    for (let j = Math.max(0, i - WINDOW); j < i; j++) {
+      const p = games[j];
+      const gap = i - j;
+      // 같은 보드에서만 위치 비교 의미 있음
+      if (p.board === l.board && canonicalCells(enemyCells(p), p.board) === myPos) {
+        score += (gap === 1) ? 2 : 1;
+        reasons.push(`적 위치 반복 (L${+p.name.slice(6)}${gap === 1 ? ', 직전' : ''})`);
+      }
+      if (structureKey(p) === myStruct) {
+        score += (gap === 1) ? 3 : 2;
+        reasons.push(`판 구조 재사용 (L${+p.name.slice(6)}${gap === 1 ? ', 직전' : ''})`);
+      }
+    }
+    // 감정 3연속
+    if (i >= 2 && games[i].emotion === games[i - 1].emotion && games[i - 1].emotion === games[i - 2].emotion) {
+      score += 1; reasons.push(`감정 3연속 (${games[i].emotion})`);
+    }
+    // 미러 방향까지 같으면 첫 플레이 실루엣이 안 갈림 → 가중
+    if (i >= 1) {
+      const prev = games[i - 1];
+      const sameMirror = (l.mirror !== false) === (prev.mirror !== false);
+      if (sameMirror && reasons.some(r => r.includes('직전'))) {
+        score += 1; reasons.push('직전과 미러 방향 동일 → 첫 플레이 실루엣 안 갈림');
+      }
+    }
+    // 의도된 재사용 완화: 반복 상대와 감정 태그가 다르면(="같은 판인데 이번엔 다르다") 지루함 위험 -1
+    // (L8이 L5를 재사용하되 neutral→dopamine으로 반전시킨 케이스가 대표 — 설계 의도이지 지루함 아님)
+    if (score > 0 && i >= 1 && reasons.length && games[i].emotion !== games[i - 1].emotion) {
+      score = Math.max(0, score - 1); reasons.push('※ 직전과 감정 반전 → 의도된 재사용으로 완화(-1)');
+    }
+    out.push({ level: +l.name.slice(6), score, reasons });
+  }
+  return out;
+}
 
 function render(levels) {
   const games = levels
@@ -144,6 +248,32 @@ function render(levels) {
       `<div class="rate-val" style="color:${has ? color : 'var(--dim)'}">${has ? l.winRate + '%' : '—'}</div>`;
     rateChart.appendChild(row);
   }
+
+  // 반복 경보 렌더
+  const repeats = analyzeRepeats(games);
+  const repeatChart = document.getElementById('repeatChart');
+  repeatChart.innerHTML = '';
+  const maxScore = Math.max(1, ...repeats.map(r => r.score));
+  let flagged = 0;
+  for (const r of repeats) {
+    const lvl = games.find(g => +g.name.slice(6) === r.level);
+    const color = r.score >= 4 ? 'var(--stress)' : r.score >= 2 ? 'var(--warn)' : 'var(--dopamine)';
+    if (r.score >= 2) flagged++;
+    const pct = Math.round((r.score / maxScore) * 100);
+    const row = document.createElement('div');
+    row.className = 'rate-row';
+    row.style.alignItems = 'flex-start';
+    row.innerHTML =
+      `<div class="rate-lv">L${r.level}</div>` +
+      `<div style="flex:1">` +
+        `<div class="rate-bar-wrap"><div class="rate-bar-fill" style="width:${Math.max(pct, r.score ? 8 : 0)}%;background:${color}"></div></div>` +
+        (r.reasons.length ? `<div style="font-size:10px;color:var(--dim);margin-top:3px;line-height:1.5">${r.reasons.join(' · ')}</div>` : '') +
+      `</div>` +
+      `<div class="rate-val" style="color:${color}">${r.score || '—'}</div>`;
+    repeatChart.appendChild(row);
+  }
+  const rp = document.querySelector('#repeatWrap .sub');
+  if (rp) rp.innerHTML += `<br><b style="color:${flagged ? 'var(--warn)' : 'var(--dopamine)'}">경보 대상 ${flagged}개 레벨</b> (점수 2 이상). 반복 판이면 미러 방향을 서로 다르게 고정하거나 적 사분면을 로테이션할 것.`;
 
   // 레벨 카드 — note를 그대로 설명으로
   const EM_LABEL = { dopamine: '도파민', stress: '스트레스', neutral: '학습', warn: '전환점' };
