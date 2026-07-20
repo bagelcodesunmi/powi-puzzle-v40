@@ -1,7 +1,7 @@
 # 포위퍼즐 도구 레퍼런스
 
 > 에이전트는 작업 전 이 파일을 참조해 올바른 도구를 선택한다.
-> 마지막 업데이트: 2026-07-18
+> 마지막 업데이트: 2026-07-20
 > ⚠️ 현재 게임(`powi-puzzle.html`)에서 쓰지 않는 파일은 전부 `archive/`로 이동했다 (2026-07-18):
 >   구버전 도구·탐색 스크립트(budget-scan*, budget-test, find-*, level-lab-v2/v3,
 >   solver-v40.js, seed-validator.js — 둘 다 edge wall 미지원), 구 프로토타입(v40~v42, v43 뼈대, v41),
@@ -36,6 +36,7 @@
 | 레벨 설계·검증 GUI (edge wall 포함) | `level-lab.html` (브라우저) |
 | 게임 플레이 확인 | `powi-puzzle.html` (브라우저) |
 | 난이도·감정 페이싱 확인 | `emotion-curve.html` (브라우저) — 예산 계단·예고봇 승률·감정 구간(도파민/스트레스/학습/전환점)을 json에서 자동 렌더링. 감정 태그는 json의 `emotion`/`tag`/`winRate` 필드로 편집 |
+| 반복·지루함 위험 점검 | `emotion-curve.html` 의 **🔁 반복 경보** 섹션 — 적 위치(D4 미러 정규화)·판 구조·감정 3연속을 점수화(직전 3레벨 창). 감정 반전 시 -1 완화. 점수 2↑ 주의·4↑ 높음. 새 레벨 추가 시 확인 (반복·다양성 정책: `curve-design-150.md`) |
 | Edge wall 레벨 검증 절차 | `level-lab.html` 솔버 + `v43-edge-wall-guide.md` §14 체크리스트 |
 | edge wall 없는 구 레벨 검증·시드 선별 | `archive/solver-v40.js`, `archive/seed-validator.js` |
 | 구버전 예산 스캔·레벨 탐색 | `archive/` 폴더 참조 (budget-scan*, find-*) |
