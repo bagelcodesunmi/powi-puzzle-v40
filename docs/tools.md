@@ -36,7 +36,7 @@
 | 레벨 설계·검증 GUI (edge wall 포함) | `level-lab.html` (브라우저) |
 | 게임 플레이 확인 | `powi-puzzle.html` (브라우저) |
 | 난이도·감정 페이싱 확인 | `emotion-curve.html` (브라우저) — 예산 계단·예고봇 승률·감정 구간(도파민/스트레스/학습/전환점)을 json에서 자동 렌더링. 감정 태그는 json의 `emotion`/`tag`/`winRate` 필드로 편집 |
-| 반복·지루함 위험 점검 | `emotion-curve.html` 의 **🔁 반복 경보** 섹션 — 적 위치(D4 미러 정규화)·판 구조·감정 3연속을 점수화(직전 3레벨 창). 감정 반전 시 -1 완화. 점수 2↑ 주의·4↑ 높음. 새 레벨 추가 시 확인 (반복·다양성 정책: `curve-design-150.md`) |
+| 반복·지루함 위험 점검 | `emotion-curve.html` 의 **🔁 반복 경보** 섹션 — 적 위치(D4 미러 정규화)·판 구조·**구조 이식**(보드 크기만 다른 같은 로컬 패턴, 가장자리 거리 시그니처 포함)·감정 3연속을 점수화(직전 3레벨 창). **반복 상대와** 감정 반전 시 -1 완화(직전 레벨 아님). 점수 2↑ 주의·4↑ 높음. 새 레벨 추가 시 확인 (반복·다양성 정책: `curve-design-150.md`) |
 | Edge wall 레벨 검증 절차 | `level-lab.html` 솔버 + `v43-edge-wall-guide.md` §14 체크리스트 |
 | edge wall 없는 구 레벨 검증·시드 선별 | `archive/solver-v40.js`, `archive/seed-validator.js` |
 | 구버전 예산 스캔·레벨 탐색 | `archive/` 폴더 참조 (budget-scan*, find-*) |
